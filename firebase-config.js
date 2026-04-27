@@ -5,13 +5,13 @@
 // 4. Copy the config object below
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    apiKey: "YOUR_API_KEY", // You'll need to get this from your Firebase project settings
+    authDomain: "harshiiiiis.firebaseapp.com",
     databaseURL: "https://harshiiiiis-default-rtdb.firebaseio.com/",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    projectId: "harshiiiiis",
+    storageBucket: "harshiiiiis.appspot.com",
+    messagingSenderId: "57547497380",
+    appId: "YOUR_APP_ID" // You'll need to get this from your Firebase project settings
 };
 
 // Initialize Firebase

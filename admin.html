@@ -13,9 +13,15 @@
         <!-- Admin Login -->
         <div id="admin-login">
             <h1>Admin Login</h1>
-            <input type="text" id="admin-username" placeholder="Username">
-            <input type="password" id="admin-password" placeholder="Password">
-            <button id="admin-login-btn">Login</button>
+            <div id="username-step">
+                <input type="text" id="admin-username" placeholder="Enter Username">
+                <button id="next-step-btn">Next</button>
+            </div>
+            <div id="password-step" class="hidden">
+                <p>Hello Admin, please enter your password:</p>
+                <input type="password" id="admin-password" placeholder="Password">
+                <button id="admin-login-btn">Login</button>
+            </div>
         </div>
 
         <!-- Admin Dashboard -->

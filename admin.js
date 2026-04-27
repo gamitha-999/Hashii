@@ -1,20 +1,33 @@
 const db = firebase.database();
 
 const adminLogin = document.getElementById('admin-login');
+const usernameStep = document.getElementById('username-step');
+const passwordStep = document.getElementById('password-step');
 const adminDashboard = document.getElementById('admin-dashboard');
+
+const nextStepBtn = document.getElementById('next-step-btn');
 const adminLoginBtn = document.getElementById('admin-login-btn');
 
-// Login Logic
-adminLoginBtn.addEventListener('click', () => {
+// Step 1: Check Username
+nextStepBtn.addEventListener('click', () => {
     const user = document.getElementById('admin-username').value;
-    const pass = document.getElementById('admin-password').value;
+    if (user === 'Admin') {
+        usernameStep.classList.add('hidden');
+        passwordStep.classList.remove('hidden');
+    } else {
+        alert("Invalid Username!");
+    }
+});
 
-    if (user === 'Admin' && pass === 'harshi') {
+// Step 2: Check Password
+adminLoginBtn.addEventListener('click', () => {
+    const pass = document.getElementById('admin-password').value;
+    if (pass === 'harshi') {
         adminLogin.classList.add('hidden');
         adminDashboard.classList.remove('hidden');
         initDashboard();
     } else {
-        alert("Incorrect credentials!");
+        alert("Incorrect Password!");
     }
 });
 
@@ -38,8 +51,6 @@ function initDashboard() {
         });
 
         playerCount.innerText = playerArray.length;
-
-        // Update leaderboard
         updateAdminLeaderboard(playerArray);
     });
 
@@ -50,7 +61,6 @@ function initDashboard() {
 }
 
 function updateAdminLeaderboard(players) {
-    // Sort by score (desc) then time (asc)
     players.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         return (a.timeTaken || 0) - (b.timeTaken || 0);
