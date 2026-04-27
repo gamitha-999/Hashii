@@ -34,7 +34,7 @@
   let players = {};
   let gameMeta = null;
   let tickInterval = null;
-  let hasJoined = false; // Track if user has clicked "Join"
+  let hasJoined = false; 
 
   const $ = s => document.querySelector(s);
   const show = sel => { 
@@ -124,17 +124,18 @@
       gameMeta = snap.val();
       if(!gameMeta){ metaRef().set({ status: 'lobby' }); return; }
       
-      if(!hasJoined) return; // Don't switch screens if user hasn't joined yet
-
-      if(gameMeta.status==='playing'){
-        if($('#lobby-screen').classList.contains('active') || $('#join-screen').classList.contains('active')){
-           show('#game-screen');
-           startLoop();
-        }
-      } else if(gameMeta.status==='ended'){
-        stopLoop(); show('#result-screen'); computeResults();
-      } else {
-        stopLoop(); show('#lobby-screen');
+      // Update screens ONLY if joined
+      if(hasJoined) {
+          if(gameMeta.status==='playing'){
+            if($('#lobby-screen').classList.contains('active') || $('#join-screen').classList.contains('active')){
+               show('#game-screen');
+               startLoop();
+            }
+          } else if(gameMeta.status==='ended'){
+            stopLoop(); show('#result-screen'); computeResults();
+          } else {
+            show('#lobby-screen');
+          }
       }
     });
   }
@@ -277,14 +278,16 @@
     myLocal.finished = false;
     setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected: true, lastSeen: now(), finished: false });
     
-    // Switch screen based on game status
+    // Switch screen immediately based on current meta
     if(gameMeta && gameMeta.status === 'playing') {
       show('#game-screen');
       startLoop();
+    } else if(gameMeta && gameMeta.status === 'ended') {
+      show('#result-screen');
+      computeResults();
     } else {
       show('#lobby-screen');
     }
-    attachListeners(); 
   }
 
   function bindUI(){ 
@@ -296,13 +299,7 @@
     initFirebase(); bindUI(); 
     show('#join-screen');
     if(playerName) $('#name-input').value = playerName;
-
-    try { 
-      metaRef().once('value').then(s=>{ 
-        if(!s.exists()) metaRef().set({ status: 'lobby' }); 
-        else gameMeta = s.val();
-      }); 
-    } catch(e){}
+    attachListeners(); 
   }
   window.addEventListener('load', init);
 })();
