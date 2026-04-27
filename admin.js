@@ -60,6 +60,7 @@
     $('#start-game').addEventListener('click', ()=>{ db.ref('games/default-game/meta').update({ status: 'playing', startTime: Date.now(), adminId: 'admin' }); });
     $('#restart-game').addEventListener('click', ()=>{ db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin' }); db.ref('games/default-game/players').once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/default-game/players/${pid}`).update({ score:0, totalTime:0 })); }); });
     $('#clear-scores').addEventListener('click', ()=>{ db.ref('games/default-game/players').once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/default-game/players/${pid}`).update({ score:0, totalTime:0 })); }); });
+    $('#adm-clear-all').addEventListener('click', ()=>{ if(confirm('Are you sure you want to clear ALL game data?')){ db.ref('games/default-game').remove(); alert('All data cleared'); location.reload(); } });
   }
 
   function attachDBListeners(){ const playersRef = db.ref('games/default-game/players'); const metaRef = db.ref('games/default-game/meta');

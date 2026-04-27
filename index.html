@@ -124,7 +124,14 @@
       <div class="card">
         <h2>Results</h2>
         <div id="result-summary" class="result-summary"></div>
-        <div class="card">
+        
+        <div id="waiting-for-others" class="card">
+          <h3>Please Wait...</h3>
+          <p>Waiting for other players to finish their exam. The leaderboard will be revealed shortly!</p>
+          <div class="loader"></div>
+        </div>
+
+        <div id="final-leaderboard-container" class="card hidden">
           <h3>Final Leaderboard</h3>
           <table id="final-leaderboard" class="leaderboard">
             <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
