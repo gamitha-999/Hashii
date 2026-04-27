@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — Study Master Challenge</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section id="login-screen" class="card">
+      <h1>Admin Login</h1>
+      <p class="muted">Enter admin credentials to manage the game.</p>
+      <input id="adm-user" placeholder="Username" />
+      <input id="adm-pass" placeholder="Password" type="password" />
+      <div class="row">
+        <button id="adm-login" class="btn primary">Login</button>
+        <button id="adm-cancel" class="btn">Back</button>
+      </div>
+      <p class="note">Username: <strong>admin</strong> • Password: <strong>harshi</strong></p>
+    </section>
+
+    <section id="dashboard" class="card hidden">
+      <div class="top">
+        <h1>Admin Dashboard</h1>
+        <div class="row">
+          <button id="adm-logout" class="btn danger">Logout</button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="create-room" class="btn">Create Room</button>
+        <button id="start-game" class="btn primary">Start Game</button>
+        <button id="restart-game" class="btn">Restart</button>
+        <button id="clear-scores" class="btn">Clear Scores</button>
+      </div>
+
+      <div class="sections">
+        <div class="left">
+          <h2>Questions</h2>
+          <div id="questions-list" class="questions"></div>
+        </div>
+        <div class="right">
+          <h2>Players</h2>
+          <ul id="players-list" class="players"></ul>
+          <h2>Room Meta</h2>
+          <div id="room-meta" class="meta"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
