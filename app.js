@@ -17,6 +17,7 @@ const waitingSection = document.getElementById('waiting-section');
 const quizSection = document.getElementById('quiz-section');
 const resultsSection = document.getElementById('results-section');
 const joinBtn = document.getElementById('join-btn');
+const leaveBtn = document.getElementById('leave-btn');
 const playerNameInput = document.getElementById('player-name');
 
 // Initialize
@@ -38,17 +39,43 @@ joinBtn.addEventListener('click', () => {
     localStorage.setItem('playerId', playerId);
     
     // Register player in Firebase
-    db.ref('players/' + playerId).set({
+    const playerRef = db.ref('players/' + playerId);
+    playerRef.set({
         name: playerName,
         score: 0,
         status: 'joined',
         lastActive: firebase.database.ServerValue.TIMESTAMP
     });
+    playerRef.onDisconnect().remove();
 
     showSection('waiting-section');
     document.getElementById('display-name').innerText = playerName;
     listenForGameStatus();
 });
+
+// Leave Game
+leaveBtn.addEventListener('click', () => {
+    if (confirm("Are you sure you want to leave the game?")) {
+        leaveGame();
+    }
+});
+
+function leaveGame() {
+    if (playerId) {
+        db.ref('players/' + playerId).remove()
+            .then(() => {
+                localStorage.clear();
+                location.reload();
+            })
+            .catch(() => {
+                localStorage.clear();
+                location.reload();
+            });
+    } else {
+        localStorage.clear();
+        location.reload();
+    }
+}
 
 function showSection(id) {
     [loginSection, waitingSection, quizSection, resultsSection].forEach(s => s.classList.add('hidden'));
@@ -199,6 +226,5 @@ function endGame() {
 }
 
 document.getElementById('play-again-btn').addEventListener('click', () => {
-    localStorage.clear();
-    location.reload();
+    leaveGame();
 });

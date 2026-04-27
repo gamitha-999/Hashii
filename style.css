@@ -85,6 +85,17 @@ button:active {
     transform: translateY(0);
 }
 
+.secondary-btn {
+    background-color: transparent;
+    color: #636e72;
+    border: 2px solid #dfe6e9;
+}
+
+.secondary-btn:hover {
+    background-color: #f1f2f6;
+    color: var(--text);
+}
+
 .hidden {
     display: none;
 }
