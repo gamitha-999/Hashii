@@ -36,7 +36,10 @@
   let tickInterval = null;
 
   const $ = s => document.querySelector(s);
-  const show = sel => { document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); document.querySelector(sel).classList.add('active'); };
+  const show = sel => { 
+    document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); 
+    $(sel).classList.add('active'); 
+  };
   const toast = (t, ms=2500) => { const el=$('#toast'); el.textContent=t; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('hidden'), ms); };
 
   function seededShuffle(arr, seed) {
@@ -88,10 +91,11 @@
     const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0)); 
     arr.forEach(p=>{ 
       const li=document.createElement('li'); 
-      li.innerHTML=`<span>${p.name||'—'}</span><small class="muted">${p.connected? 'Online':'Offline'}${p.finished?' (Finished)':''}</small>`; 
+      li.innerHTML=`<span>${p.name||'—'}</span><small class="muted">${p.connected? 'Online':'Offline'}${p.finished?' (Done ✅)':' (Playing...)'}</small>`; 
       list.appendChild(li); 
     }); 
     $('#players-count').textContent = `${arr.length} player${arr.length===1? '':'s'}`; 
+    // Always check results if we are on result screen
     if($('#result-screen').classList.contains('active')) computeResults();
   }
 
@@ -101,7 +105,8 @@
     tbody.innerHTML=''; 
     arr.forEach((p,i)=>{ 
       const tr=document.createElement('tr'); 
-      tr.innerHTML=`<td>${i+1}</td><td>${p.name}</td><td>${p.score||0}</td><td>${Math.round(p.totalTime||0)}</td>`; 
+      let trophy = i===0 ? '🥇' : (i===1 ? '🥈' : (i===2 ? '🥉' : ''));
+      tr.innerHTML=`<td>${i+1} ${trophy}</td><td>${p.name}</td><td>${p.score||0}</td><td>${Math.round(p.totalTime||0)}</td>`; 
       tbody.appendChild(tr); 
     }); 
   }
@@ -140,15 +145,18 @@
   function tick(){ 
     if(!gameMeta || gameMeta.status!=='playing') return; 
     const idx = currentIndex(); 
-    const q = QUESTIONS[idx]; 
-    if(!q){ 
+    const elapsed = Math.floor((Date.now()-gameMeta.startTime)/1000);
+
+    // If global time is up for all questions
+    if(elapsed >= TOTAL_QUESTIONS * QUESTION_TIME){ 
       myLocal.finished = true; writeMyState();
-      metaRef().update({ status: 'ended', endTime: now() }); 
+      // Only one person needs to trigger global 'ended'
+      if(gameMeta.hostId === playerId || !gameMeta.hostId) metaRef().update({ status: 'ended', endTime: now() }); 
       return; 
     }
     
+    const q = QUESTIONS[idx];
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
-    // Automatic timeout handling
     if(!answers[idx] && timeLeft() <= 0) {
        submitAnswer(idx, null, q.correct);
     }
@@ -187,7 +195,7 @@
 
   function submitAnswer(qIndex, selected, correct){ 
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
-    if(answers[qIndex]) return; // prevent spam
+    if(answers[qIndex]) return;
 
     const start = gameMeta.startTime + qIndex*QUESTION_TIME*1000; 
     const t = Math.max(0, Math.round((Date.now()-start)/1000)); 
@@ -209,7 +217,6 @@
     if(qIndex === TOTAL_QUESTIONS - 1) myLocal.finished = true;
     writeMyState(); 
 
-    // Show result feedback
     if(timedOut) {
       AudioMgr.wrong(); $('#feedback').innerHTML = `⏰ Time's up! Correct: <b>${correct}</b>`;
     } else if(isCorrect) { 
@@ -218,11 +225,10 @@
       AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
     }
 
-    // After answering, wait briefly then hide options to avoid confusion
     setTimeout(() => {
-        if(currentIndex() === qIndex) {
-            $('#options').innerHTML = '<div class="card" style="text-align:center;width:100%">⏳ Please wait for the next question...</div>';
-            $('#feedback').innerHTML = 'Wait for others...';
+        if(currentIndex() === qIndex && gameMeta.status === 'playing') {
+            $('#options').innerHTML = '<div class="card" style="text-align:center;width:100%">⏳ Good job! Wait for the next question...</div>';
+            $('#feedback').innerHTML = 'Syncing... 📡';
         }
     }, 1500);
   }
@@ -236,19 +242,27 @@
 
   function computeResults(){ 
     const arr = Object.values(players);
-    const everyoneFinished = arr.length > 0 && arr.every(p => p.finished);
-    const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0)); 
+    // Filter active players (those seen in last 2 mins)
+    const activeThreshold = now() - 120000;
+    const activePlayers = arr.filter(p => p.lastSeen > activeThreshold || p.connected);
+    
+    const everyoneFinished = activePlayers.length > 0 && activePlayers.every(p => p.finished);
+    const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
+    
     renderLeaderboard(sortedArr,'#final-leaderboard tbody'); 
 
     const me = sortedArr.find(p=>p.id===playerId) || {}; 
     const percent = Math.max(0, Math.min(100, Math.round((me.score||0)/(TOTAL_QUESTIONS*10) * 100))); 
     let msg=''; 
     if(percent>=90) msg='A+ Student 🔥'; else if(percent>=70) msg='Almost There 💪'; else msg='Need Better Habits 😅'; 
+    
     $('#result-summary').innerHTML = `<h3>${me.name||'You'} — ${me.score||0} pts</h3><p>${msg}</p>`; 
 
     if(everyoneFinished) {
       $('#waiting-for-others').classList.add('hidden');
       $('#final-leaderboard-container').classList.remove('hidden');
+      // Highlight winner
+      if(sortedArr[0]) toast(`🎉 Winner: ${sortedArr[0].name}!`);
     } else {
       $('#waiting-for-others').classList.remove('hidden');
       $('#final-leaderboard-container').classList.add('hidden');
@@ -263,13 +277,14 @@
     myLocal.score = parseInt(localStorage.getItem('sm-score')||'0',10) || 0; 
     myLocal.totalTime = parseInt(localStorage.getItem('sm-totalTime')||'0',10) || 0; 
     myLocal.answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
+    myLocal.finished = false;
     setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected: true, lastSeen: now(), finished: false });
     show('#lobby-screen'); attachListeners(); 
   }
 
   function bindUI(){ 
     $('#join-btn').addEventListener('click', ()=>{ const n=$('#name-input').value.trim(); if(!n){ toast('✍️ Enter your name'); return; } joinGame(n); }); 
-    $('#reset-local-btn').addEventListener('click', ()=>{ localStorage.clear(); toast('🧹 Data reset'); location.reload(); });
+    $('#reset-local-btn').addEventListener('click', ()=>{ if(confirm('Clear all local data?')) { localStorage.clear(); toast('🧹 Data reset'); location.reload(); } });
   }
 
   function init(){ 
