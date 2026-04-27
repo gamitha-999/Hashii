@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Study Master</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container admin-container">
+        
+        <!-- Admin Login -->
+        <div id="admin-login">
+            <h1>Admin Login</h1>
+            <input type="text" id="admin-username" placeholder="Username">
+            <input type="password" id="admin-password" placeholder="Password">
+            <button id="admin-login-btn">Login</button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="hidden">
+            <h1>Admin Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Players</h3>
+                    <p id="player-count">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Status</h3>
+                    <p id="game-status">Waiting</p>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <button id="start-game-btn" style="background-color: var(--success);">Start Game</button>
+                <button id="reset-game-btn" style="background-color: var(--warning); color: #2d3436;">Reset Game</button>
+                <button id="clear-leaderboard-btn" style="background-color: var(--danger);">Clear Leaderboard</button>
+            </div>
+
+            <div class="player-list">
+                <h3>Connected Players</h3>
+                <div id="player-list-items">
+                    <!-- Players will be listed here -->
+                </div>
+            </div>
+
+            <div id="admin-leaderboard" style="margin-top: 30px;">
+                <h3>Current Leaderboard</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-leaderboard-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Scripts -->
+    <script src="firebase-config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
