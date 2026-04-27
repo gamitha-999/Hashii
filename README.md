@@ -5,8 +5,9 @@ Study Master Challenge is a polished multiplayer quiz game built for hosting on 
 Features
 - Join lobby with name
 - Real-time players list & live leaderboard
-- Admin/Host controls (any player can claim host)
-  - Any player may claim host to start the game
+- Admin/Host controls with separate admin login
+  - Admin username: `admin`
+  - Admin password: `harshi`
 - Host can start the game for everyone
 - 10 scenario-based MCQs, 20s per question
 - Scoring: +10 correct, -5 wrong, -5 timeout

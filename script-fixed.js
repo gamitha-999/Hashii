@@ -96,8 +96,8 @@
     metaRef().on('value', snap=>{
       gameMeta = snap.val();
       if(!gameMeta){ metaRef().set({ status: 'lobby' }); return; }
-      // Update host UI whenever meta changes
-      updateHostUI();
+      // Update admin UI whenever meta changes
+      updateAdminUI();
       if(gameMeta.status==='playing'){
         if(document.querySelector('.screen.active').id!=='game-screen') show('#game-screen');
         startLoop();
@@ -137,9 +137,19 @@
   // Timeout handling when user refreshes - apply penalties for unanswered questions between last handled and current index
   function applyTimeouts(){ const last = parseInt(localStorage.getItem('sm-lastHandled')||'-1',10); const idx = currentIndex(); const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); for(let s=last+1;s<idx;s++){ if(!answers[s]){ myLocal.score = (myLocal.score||0)-5; myLocal.totalTime = (myLocal.totalTime||0)+QUESTION_TIME; answers[s]={ answer:null, timedOut:true, time:QUESTION_TIME, correct:false }; } } localStorage.setItem('sm-answers', JSON.stringify(answers)); localStorage.setItem('sm-lastHandled', String(Math.max(-1, idx-1))); writeMyState(); }
 
-  // Host functions
-  function claimHost(){ if(!db || !playerId) return; metaRef().transaction(curr=>{ if(!curr) return { status: 'lobby', hostId: playerId }; curr.hostId = playerId; return curr; }); toast('You are now the host'); }
-  function updateHostUI(){ const hostId = (gameMeta && gameMeta.hostId) ? gameMeta.hostId : null; if(hostId && hostId === playerId){ const ha = $('#host-actions'); if(ha) ha.classList.remove('hidden'); const ch = $('#claim-host-btn'); if(ch) ch.classList.add('hidden'); } else { const ha = $('#host-actions'); if(ha) ha.classList.add('hidden'); const ch = $('#claim-host-btn'); if(ch) ch.classList.remove('hidden'); } }
+  // Admin functions
+  function adminLogin(){ if(!playerId){ toast('Join the game first to use admin'); return; } const user = $('#admin-username').value.trim(); const pass = $('#admin-password').value; if(user==='admin' && pass==='harshi'){ localStorage.setItem('sm-isAdmin','1'); // mark as admin locally
+      // set adminId in meta
+      metaRef().transaction(curr=>{ if(!curr) return { status: 'lobby', adminId: playerId }; curr.adminId = playerId; return curr; }); toast('Admin login successful'); updateAdminUI(); } else { toast('Invalid admin credentials'); } }
+  function updateAdminUI(){ const adminId = (gameMeta && gameMeta.adminId) ? gameMeta.adminId : null; if(adminId && adminId === playerId && localStorage.getItem('sm-isAdmin')){
+      $('#admin-login-form').classList.add('hidden');
+      $('#admin-actions').classList.remove('hidden');
+      populateAdminPlayers();
+    } else {
+      $('#admin-actions').classList.add('hidden');
+      $('#admin-login-form').classList.remove('hidden');
+    } }
+  function populateAdminPlayers(){ const el = $('#admin-players'); if(!el) return; el.innerHTML = ''; Object.values(players).forEach(p=>{ const li = document.createElement('li'); li.innerHTML = `${p.name} — ${p.score||0} pts <button class="btn" data-kick="${p.id}">Remove</button>`; el.appendChild(li); }); el.querySelectorAll('button[data-kick]').forEach(b=> b.addEventListener('click', e=>{ const id = e.currentTarget.dataset.kick; db.ref(`games/${GAME_ID}/players/${id}`).remove(); toast('Player removed'); })); }
 
   // Compute final results view
   function computeResults(){ const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); renderLeaderboard(arr,'#final-leaderboard tbody'); const me = arr.find(p=>p.id===playerId) || {}; const percent = Math.max(0, Math.min(100, Math.round((me.score||0)/(TOTAL_QUESTIONS*10) * 100))); let msg=''; if(percent>=90) msg='A+ Student 🔥'; else if(percent>=70) msg='Almost There 💪'; else msg='Need Better Habits 😅'; $('#result-summary').innerHTML = `<h3>${me.name||'You'} — ${me.score||0} pts</h3><p>${msg}</p>`; }
@@ -153,17 +163,21 @@
 
   // UI bindings
   function bindUI(){ $('#join-btn').addEventListener('click', ()=>{ const n=$('#name-input').value.trim(); if(!n){ toast('Enter your name'); return; } joinGame(n); }); $('#spectate-btn').addEventListener('click', ()=> joinGame('Spectator-'+Math.random().toString(36).slice(2,5))); $('#leave-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false, lastSeen: now() }); show('#join-screen'); }); $('#leave-game-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false, lastSeen: now() }); show('#join-screen'); }); $('#back-lobby-btn').addEventListener('click', ()=>{ metaRef().set({ status: 'lobby' }); show('#lobby-screen'); }); $('#reset-local-btn').addEventListener('click', ()=>{ localStorage.clear(); toast('Local data reset'); location.reload(); });
-    // Claim host button
-    const claimBtn = $('#claim-host-btn'); if(claimBtn) claimBtn.addEventListener('click', ()=> claimHost());
-    // small host actions in lobby
-    $('#start-game-btn').addEventListener('click', ()=> metaRef().set({ status: 'playing', startTime: now() })); $('#restart-btn').addEventListener('click', ()=>{ metaRef().set({ status: 'lobby' }); playersRef().once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0 })); }); localStorage.removeItem('sm-answers'); localStorage.removeItem('sm-lastHandled'); toast('Game restarted'); }); $('#clear-scores-btn').addEventListener('click', ()=>{ playersRef().once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0 })); }); toast('Scores cleared'); }); }
+    // Admin login button
+    const adminLoginBtn = $('#admin-login-btn'); if(adminLoginBtn) adminLoginBtn.addEventListener('click', ()=> adminLogin());
+    // Admin actions
+    $('#admin-create-room-btn').addEventListener('click', ()=>{ if(!playerId){ toast('Join first'); return; } metaRef().set({ status: 'lobby', adminId: playerId }); toast('Room created'); });
+    $('#admin-start-btn').addEventListener('click', ()=>{ if(!playerId){ toast('Join first'); return; } metaRef().set({ status: 'playing', startTime: now(), adminId: playerId }); toast('Game started'); });
+    $('#admin-restart-btn').addEventListener('click', ()=>{ metaRef().set({ status: 'lobby' }); playersRef().once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0 })); }); localStorage.removeItem('sm-answers'); localStorage.removeItem('sm-lastHandled'); toast('Game restarted'); });
+    $('#admin-clear-scores-btn').addEventListener('click', ()=>{ playersRef().once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0 })); }); toast('Scores cleared'); });
+  }
 
   // Init
   function init(){ initFirebase(); bindUI(); if(playerId && playerName){ // auto join
       try{ attachListeners(); setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected:true, lastSeen: now() }); show('#lobby-screen'); }
       catch(e){ console.warn(e); show('#join-screen'); }
     } else show('#join-screen'); // ensure meta exists
-    try{ metaRef().once('value').then(s=>{ if(!s.exists()) metaRef().set({ status: 'lobby' }); else { gameMeta = s.val(); updateHostUI(); } }); }catch(e){}
+    try{ metaRef().once('value').then(s=>{ if(!s.exists()) metaRef().set({ status: 'lobby' }); else { gameMeta = s.val(); updateAdminUI(); } }); }catch(e){}
   }
 
   // Expose for debugging

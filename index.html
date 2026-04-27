@@ -45,12 +45,25 @@
             <h3>Game Info</h3>
             <p>Mode: Live Quiz for students</p>
             <p>Players will be synced live. Host can start the game for everyone.</p>
-            <div id="host-controls" class="host-controls">
-              <button id="claim-host-btn" class="btn">Claim Host</button>
-              <div id="host-actions" class="hidden">
-                <button id="start-game-btn" class="btn primary">Start Game</button>
-                <button id="restart-btn" class="btn">Restart Game</button>
-                <button id="clear-scores-btn" class="btn">Clear Scores</button>
+            <div id="admin-controls" class="admin-controls">
+              <div id="admin-login-form">
+                <input id="admin-username" placeholder="Admin username" />
+                <input id="admin-password" placeholder="Password" type="password" />
+                <div class="row">
+                  <button id="admin-login-btn" class="btn primary">Admin Login</button>
+                </div>
+              </div>
+              <div id="admin-actions" class="hidden">
+                <div class="row">
+                  <button id="admin-create-room-btn" class="btn">Create Room</button>
+                  <button id="admin-start-btn" class="btn primary">Start Game</button>
+                  <button id="admin-restart-btn" class="btn">Restart</button>
+                  <button id="admin-clear-scores-btn" class="btn">Clear Scores</button>
+                </div>
+                <div>
+                  <h4>Players</h4>
+                  <ul id="admin-players"></ul>
+                </div>
               </div>
             </div>
             <div class="card small">
