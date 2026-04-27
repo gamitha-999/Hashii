@@ -207,28 +207,28 @@
     if(qIndex === TOTAL_QUESTIONS - 1) myLocal.finished = true;
     writeMyState(); 
 
-    if(correctAns) { AudioMgr.correct(); $('#feedback').textContent='Correct! +10'; } 
-    else { AudioMgr.wrong(); $('#feedback').textContent=`Wrong -5. Correct: ${QUESTIONS[qIndex].correct}`; }
+    if(correctAns) { AudioMgr.correct(); $('#feedback').innerHTML='✅ Correct! <span style="color:#10b981">+10 pts</span>'; } 
+    else { AudioMgr.wrong(); $('#feedback').innerHTML=`❌ Wrong! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${QUESTIONS[qIndex].correct}</b>`; }
   }
 
   function updateMyRank(){ 
     const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
     const idx = arr.findIndex(p=>p.id===playerId); 
-    $('#rank').textContent = idx>=0? `#${idx+1}`:'# -'; 
-    $('#my-score').textContent = `Score: ${myLocal.score||0}`; 
+    $('#rank').textContent = idx>=0? `🏆 #${idx+1}`:'🏆 # -'; 
+    $('#my-score').textContent = `✨ Score: ${myLocal.score||0}`; 
   }
 
   // Admin functions
   function adminLogin(){ 
-    if(!playerId){ toast('Join the game first to use admin'); return; } 
+    if(!playerId){ toast('⚠️ Join the game first to use admin'); return; } 
     const user = $('#admin-username').value.trim(); 
     const pass = $('#admin-password').value; 
     if(user==='admin' && pass==='harshi'){ 
       localStorage.setItem('sm-isAdmin','1'); 
       metaRef().transaction(curr=>{ if(!curr) return { status: 'lobby', adminId: playerId }; curr.adminId = playerId; return curr; }); 
-      toast('Admin login successful'); 
+      toast('🎉 Admin login successful!'); 
       updateAdminUI(); 
-    } else { toast('Invalid admin credentials'); } 
+    } else { toast('❌ Invalid admin credentials'); } 
   }
   function updateAdminUI(){ 
     const adminId = (gameMeta && gameMeta.adminId) ? gameMeta.adminId : null; 

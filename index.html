@@ -11,12 +11,12 @@
     <!-- Splash / Join -->
     <section id="join-screen" class="screen active">
       <div class="card">
-        <h1>Study Master Challenge</h1>
-        <p class="subtitle">Can you get A+ in your exam?</p>
-        <input id="name-input" placeholder="Enter your name" maxlength="24" />
+        <h1>🎓 Study Master Challenge</h1>
+        <p class="subtitle">Can you get A+ in your exam? 🚀</p>
+        <input id="name-input" placeholder="✍️ Enter your name" maxlength="24" />
         <div class="row">
-          <button id="join-btn" class="btn primary">Join Game</button>
-          <button class="btn" onclick="location.href='admin.html'">Admin Login</button>
+          <button id="join-btn" class="btn primary">Join Game 🎮</button>
+          <button class="btn" onclick="location.href='admin.html'">Admin Login 🔑</button>
         </div>
         <small class="muted">Enter your name to join the lobby</small>
       </div>
@@ -25,7 +25,7 @@
     <!-- Lobby -->
     <section id="lobby-screen" class="screen">
       <div class="topbar">
-        <h2>Lobby</h2>
+        <h2>🏠 Lobby</h2>
         <div id="lobby-controls">
           <span id="players-count">0 players</span>
         </div>
@@ -33,55 +33,59 @@
       <div class="content">
         <div class="left">
           <div class="card">
-            <h3>Waiting Room</h3>
+            <h3>👥 Waiting Room</h3>
             <ul id="players-list" class="players-list"></ul>
-            <div class="meta">
-              <button id="leave-btn" class="btn danger">Leave Game</button>
+            <div class="meta" style="margin-top:20px">
+              <button id="leave-btn" class="btn danger">Leave Game 🏃</button>
             </div>
           </div>
         </div>
         <div class="right">
           <div class="card">
-            <h3>Game Info</h3>
-            <p>Mode: Live Quiz for students</p>
+            <h3>ℹ️ Game Info</h3>
+            <p>Mode: 📝 Live Quiz for students</p>
             <p>Players will be synced live. Host can start the game for everyone.</p>
-            <div id="admin-controls" class="admin-controls">
+            
+            <div id="admin-controls" class="admin-controls card small" style="background:rgba(0,0,0,0.2)">
               <div id="admin-login-form">
-                <input id="admin-username" placeholder="Admin username" />
+                <h4>🔐 Quick Admin Login</h4>
+                <input id="admin-username" placeholder="Username" />
                 <input id="admin-password" placeholder="Password" type="password" />
                 <div class="row">
-                  <button id="admin-login-btn" class="btn primary">Admin Login</button>
+                  <button id="admin-login-btn" class="btn primary">Login 🔑</button>
                 </div>
               </div>
               <div id="admin-actions" class="hidden">
+                <h4>🛠️ Admin Controls</h4>
                 <div class="row">
-                  <button id="admin-create-room-btn" class="btn">Create Room</button>
-                  <button id="admin-start-btn" class="btn primary">Start Game</button>
-                  <button id="admin-restart-btn" class="btn">Restart</button>
-                  <button id="admin-clear-scores-btn" class="btn">Clear Scores</button>
+                  <button id="admin-create-room-btn" class="btn">Create Room 🚪</button>
+                  <button id="admin-start-btn" class="btn primary">Start Game ⚡</button>
+                  <button id="admin-restart-btn" class="btn">Restart 🔄</button>
+                  <button id="admin-clear-scores-btn" class="btn">Clear 🧹</button>
                 </div>
-                <div>
-                  <h4>Players</h4>
-                  <ul id="admin-players"></ul>
+                <div style="margin-top:15px">
+                  <h4>Players Management</h4>
+                  <ul id="admin-players" class="players-list"></ul>
                 </div>
               </div>
             </div>
+
             <div class="card small">
-              <h4>Stages</h4>
+              <h4>📚 Learning Stages</h4>
               <ol>
-                <li>Time Management</li>
-                <li>Avoid Distractions</li>
-                <li>Smart Study Methods</li>
-                <li>Revision</li>
-                <li>Exam Day Tips</li>
+                <li>⏰ Time Management</li>
+                <li>🚫 Avoid Distractions</li>
+                <li>💡 Smart Study Methods</li>
+                <li>🔄 Revision</li>
+                <li>🎯 Exam Day Tips</li>
               </ol>
             </div>
           </div>
 
           <div class="card">
-            <h3>Live Leaderboard</h3>
+            <h3>📊 Live Leaderboard</h3>
             <table id="leaderboard" class="leaderboard">
-              <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
+              <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -94,17 +98,18 @@
       <div class="game-card">
         <div class="game-header">
           <div>
-            <h2 id="question-stage">Stage</h2>
+            <h2 id="question-stage">📖 Stage</h2>
             <h1 id="question-text">Question text</h1>
-            <div id="progress-wrap">
-              <div id="progress-bar"></div>
-            </div>
           </div>
           <div class="scoreboard-mini">
-            <div id="rank"># -</div>
-            <div id="my-score">Score: 0</div>
-            <div id="timer">20</div>
+            <div id="rank">🏆 # -</div>
+            <div id="my-score">✨ Score: 0</div>
+            <div id="timer">⏱️ 20</div>
           </div>
+        </div>
+        
+        <div id="progress-wrap">
+          <div id="progress-bar"></div>
         </div>
 
         <div id="options" class="options"></div>
@@ -112,8 +117,8 @@
         <div class="game-footer">
           <div id="feedback" class="feedback"></div>
           <div class="row">
-            <button id="leave-game-btn" class="btn danger">Leave</button>
-            <button id="try-again-btn" class="btn hidden">Try Again</button>
+            <button id="leave-game-btn" class="btn danger">Leave 🏃</button>
+            <button id="try-again-btn" class="btn hidden">Try Again 🔄</button>
           </div>
         </div>
       </div>
@@ -122,25 +127,25 @@
     <!-- Result screen -->
     <section id="result-screen" class="screen">
       <div class="card">
-        <h2>Results</h2>
+        <h2>🎉 Final Results</h2>
         <div id="result-summary" class="result-summary"></div>
         
         <div id="waiting-for-others" class="card">
-          <h3>Please Wait...</h3>
-          <p>Waiting for other players to finish their exam. The leaderboard will be revealed shortly!</p>
+          <h3>⏳ Please Wait...</h3>
+          <p>Waiting for other players to finish their exam. The leaderboard will be revealed shortly! 📊</p>
           <div class="loader"></div>
         </div>
 
         <div id="final-leaderboard-container" class="card hidden">
-          <h3>Final Leaderboard</h3>
+          <h3>🏆 Final Leaderboard</h3>
           <table id="final-leaderboard" class="leaderboard">
             <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <div class="row">
-          <button id="back-lobby-btn" class="btn">Back to Lobby</button>
-          <button id="reset-local-btn" class="btn">Reset Local Data</button>
+          <button id="back-lobby-btn" class="btn">🏠 Back to Lobby</button>
+          <button id="reset-local-btn" class="btn">🧹 Reset Local Data</button>
         </div>
       </div>
     </section>
