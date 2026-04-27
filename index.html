@@ -18,7 +18,7 @@
           <button id="join-btn" class="btn primary">Join Game</button>
           <button id="spectate-btn" class="btn">Spectate</button>
         </div>
-        <small class="muted">Press <strong>Ctrl+Shift+A</strong> for Admin login</small>
+        <small class="muted">Enter your name to join the lobby</small>
       </div>
     </section>
 
@@ -45,10 +45,13 @@
             <h3>Game Info</h3>
             <p>Mode: Live Quiz for students</p>
             <p>Players will be synced live. Host can start the game for everyone.</p>
-            <div id="host-controls" class="host-controls hidden">
-              <button id="start-game-btn" class="btn primary">Start Game</button>
-              <button id="restart-btn" class="btn">Restart Game</button>
-              <button id="clear-scores-btn" class="btn">Clear Scores</button>
+            <div id="host-controls" class="host-controls">
+              <button id="claim-host-btn" class="btn">Claim Host</button>
+              <div id="host-actions" class="hidden">
+                <button id="start-game-btn" class="btn primary">Start Game</button>
+                <button id="restart-btn" class="btn">Restart Game</button>
+                <button id="clear-scores-btn" class="btn">Clear Scores</button>
+              </div>
             </div>
             <div class="card small">
               <h4>Stages</h4>
@@ -122,33 +125,7 @@
       </div>
     </section>
 
-    <!-- Admin modal -->
-    <div id="admin-modal" class="modal hidden">
-      <div class="modal-inner">
-        <h3>Admin Login</h3>
-        <input id="admin-user" placeholder="Username" />
-        <input id="admin-pass" placeholder="Password" type="password" />
-        <div class="row">
-          <button id="admin-login-btn" class="btn primary">Login</button>
-          <button id="admin-cancel-btn" class="btn">Cancel</button>
-        </div>
-        <div id="admin-panel" class="admin-panel hidden">
-          <h4>Admin Panel</h4>
-          <div class="row">
-            <button id="admin-start" class="btn primary">Start Game</button>
-            <button id="admin-restart" class="btn">Restart</button>
-            <button id="admin-reset-scores" class="btn">Clear Scores</button>
-          </div>
-          <div>
-            <h5>Players</h5>
-            <ul id="admin-players"></ul>
-          </div>
-          <div class="row">
-            <button id="admin-logout" class="btn danger">Logout</button>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Toasts -->
     <div id="toast" class="toast hidden"></div>
