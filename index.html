@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Study Master Challenge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Splash / Join -->
+    <section id="join-screen" class="screen active">
+      <div class="card">
+        <h1>Study Master Challenge</h1>
+        <p class="subtitle">Can you get A+ in your exam?</p>
+        <input id="name-input" placeholder="Enter your name" maxlength="24" />
+        <div class="row">
+          <button id="join-btn" class="btn primary">Join Game</button>
+          <button id="spectate-btn" class="btn">Spectate</button>
+        </div>
+        <small class="muted">Press <strong>Ctrl+Shift+A</strong> for Admin login</small>
+      </div>
+    </section>
+
+    <!-- Lobby -->
+    <section id="lobby-screen" class="screen">
+      <div class="topbar">
+        <h2>Lobby</h2>
+        <div id="lobby-controls">
+          <span id="players-count">0 players</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="left">
+          <div class="card">
+            <h3>Waiting Room</h3>
+            <ul id="players-list" class="players-list"></ul>
+            <div class="meta">
+              <button id="leave-btn" class="btn danger">Leave Game</button>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="card">
+            <h3>Game Info</h3>
+            <p>Mode: Live Quiz for students</p>
+            <p>Players will be synced live. Host can start the game for everyone.</p>
+            <div id="host-controls" class="host-controls hidden">
+              <button id="start-game-btn" class="btn primary">Start Game</button>
+              <button id="restart-btn" class="btn">Restart Game</button>
+              <button id="clear-scores-btn" class="btn">Clear Scores</button>
+            </div>
+            <div class="card small">
+              <h4>Stages</h4>
+              <ol>
+                <li>Time Management</li>
+                <li>Avoid Distractions</li>
+                <li>Smart Study Methods</li>
+                <li>Revision</li>
+                <li>Exam Day Tips</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Live Leaderboard</h3>
+            <table id="leaderboard" class="leaderboard">
+              <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game screen -->
+    <section id="game-screen" class="screen">
+      <div class="game-card">
+        <div class="game-header">
+          <div>
+            <h2 id="question-stage">Stage</h2>
+            <h1 id="question-text">Question text</h1>
+            <div id="progress-wrap">
+              <div id="progress-bar"></div>
+            </div>
+          </div>
+          <div class="scoreboard-mini">
+            <div id="rank"># -</div>
+            <div id="my-score">Score: 0</div>
+            <div id="timer">20</div>
+          </div>
+        </div>
+
+        <div id="options" class="options"></div>
+
+        <div class="game-footer">
+          <div id="feedback" class="feedback"></div>
+          <div class="row">
+            <button id="leave-game-btn" class="btn danger">Leave</button>
+            <button id="try-again-btn" class="btn hidden">Try Again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Result screen -->
+    <section id="result-screen" class="screen">
+      <div class="card">
+        <h2>Results</h2>
+        <div id="result-summary" class="result-summary"></div>
+        <div class="card">
+          <h3>Final Leaderboard</h3>
+          <table id="final-leaderboard" class="leaderboard">
+            <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="row">
+          <button id="back-lobby-btn" class="btn">Back to Lobby</button>
+          <button id="reset-local-btn" class="btn">Reset Local Data</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin modal -->
+    <div id="admin-modal" class="modal hidden">
+      <div class="modal-inner">
+        <h3>Admin Login</h3>
+        <input id="admin-user" placeholder="Username" />
+        <input id="admin-pass" placeholder="Password" type="password" />
+        <div class="row">
+          <button id="admin-login-btn" class="btn primary">Login</button>
+          <button id="admin-cancel-btn" class="btn">Cancel</button>
+        </div>
+        <div id="admin-panel" class="admin-panel hidden">
+          <h4>Admin Panel</h4>
+          <div class="row">
+            <button id="admin-start" class="btn primary">Start Game</button>
+            <button id="admin-restart" class="btn">Restart</button>
+            <button id="admin-reset-scores" class="btn">Clear Scores</button>
+          </div>
+          <div>
+            <h5>Players</h5>
+            <ul id="admin-players"></ul>
+          </div>
+          <div class="row">
+            <button id="admin-logout" class="btn danger">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toasts -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <!-- Firebase SDK and app script -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
