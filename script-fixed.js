@@ -1,7 +1,4 @@
-/* Study Master Challenge - fixed script (script-fixed.js)
-   Replaces script.js for stable admin login, student join, and robust behavior.
-   Update firebaseConfig values as needed.
-*/
+/* Study Master Challenge - fixed script (script-fixed.js) */
 (function(){
   // CONFIG
   const GAME_ID = 'default-game';
@@ -19,16 +16,16 @@
 
   // QUESTIONS
   const QUESTIONS = [
-    { q: "Exam is in 5 days. What should you do first?", correct: "Make a clear study timetable", options: ["Start cramming all night","Make a clear study timetable","Only study the hardest topic","Wait until the last day to start"], stage: "Time Management" },
-    { q: "Best place to study?", correct: "Quiet place with minimal distractions", options: ["In a crowded cafe with loud music","Quiet place with minimal distractions","Only when you're watching videos","On your bed while lying down"], stage: "Avoid Distractions" },
-    { q: "Best way to remember lessons?", correct: "Active recall + practice questions", options: ["Only re-reading notes","Active recall + practice questions","Highlight everything in textbooks","Memorize by hearing music"], stage: "Smart Study Methods" },
-    { q: "Study session timing?", correct: "25–50 minutes with short breaks", options: ["25–50 minutes with short breaks","Study for 6 hours straight","Study 1 minute each topic","All-night sessions only"], stage: "Time Management" },
-    { q: "Phone usage while studying?", correct: "Keep it away or turn it off", options: ["Keep it away or turn it off","Check every notification","Use social media for breaks every 2 minutes","Never charge your phone while studying"], stage: "Avoid Distractions" },
-    { q: "Before exam day?", correct: "Revise important notes", options: ["Memorize new chapters last minute","Revise important notes","Try new study methods the same day","Skip sleep for full revision"], stage: "Revision" },
-    { q: "Night before exam?", correct: "Revise lightly and sleep well", options: ["Pull an all-nighter","Practice only new topics","Revise lightly and sleep well","Skip breakfast and rush to exam"], stage: "Exam Day Tips" },
-    { q: "Don’t understand a lesson?", correct: "Ask teacher/friends + practice", options: ["Ignore it and hope for the best","Ask teacher/friends + practice","Only watch videos without practicing","Avoid the topic permanently"], stage: "Smart Study Methods" },
-    { q: "Time management method?", correct: "Make a clear study timetable", options: ["Rely completely on luck","Make a clear study timetable","Study randomly without plan","Study when you feel like it only"], stage: "Time Management" },
-    { q: "During exam?", correct: "Read carefully + manage time properly", options: ["Guess all answers quickly","Read carefully + manage time properly","Spend all time on first question","Panic and skip questions"], stage: "Exam Day Tips" }
+    { q: "Exam is in 5 days. What should you do first?", correct: "Make a clear study timetable", options: ["Start studying random subjects","Make a clear study timetable","Read only your favorite subject","Watch study videos without planning"], stage: "Time Management" },
+    { q: "Best place to study?", correct: "Quiet place with minimal distractions", options: ["Quiet place with minimal distractions","Slightly noisy place with music","Bed with comfort","Anywhere with phone nearby"], stage: "Avoid Distractions" },
+    { q: "Best way to remember lessons?", correct: "Active recall + practice questions", options: ["Read notes multiple times","Highlight everything","Active recall + practice questions","Watch explanation videos only"], stage: "Smart Study Methods" },
+    { q: "Study session timing?", correct: "25–50 minutes with short breaks", options: ["20 minutes then break","25–50 minutes with short breaks","2 hours nonstop","Study only when you feel like"], stage: "Time Management" },
+    { q: "Phone usage while studying?", correct: "Keep it away or turn it off", options: ["Keep it silent near you","Use only for study apps","Keep it away or turn it off","Check it during breaks only"], stage: "Avoid Distractions" },
+    { q: "Before exam day?", correct: "Revise important notes", options: ["Revise important notes","Study everything again quickly","Focus on weak areas only","Learn new lessons"], stage: "Revision" },
+    { q: "Night before exam?", correct: "Revise lightly and sleep well", options: ["Revise lightly and sleep well","Study till very late night","Wake up early and study more","Stay awake whole night"], stage: "Exam Day Tips" },
+    { q: "Don’t understand a lesson?", correct: "Ask teacher/friends + practice", options: ["Re-read notes again","Watch videos again","Ask teacher/friends + practice","Skip and come back later"], stage: "Smart Study Methods" },
+    { q: "Time management method?", correct: "Make a clear study timetable", options: ["Make a flexible plan","Make a clear study timetable","Study based on mood","Do easiest subjects first always"], stage: "Time Management" },
+    { q: "During exam?", correct: "Read carefully + manage time properly", options: ["Answer easy questions first","Read carefully + manage time properly","Spend more time on hard questions","Rush to finish early"], stage: "Exam Day Tips" }
   ];
 
   // STATE
@@ -40,12 +37,10 @@
   let gameMeta = null;
   let tickInterval = null;
 
-  // DOM helpers
   const $ = s => document.querySelector(s);
   const show = sel => { document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); document.querySelector(sel).classList.add('active'); };
   const toast = (t, ms=2500) => { const el=$('#toast'); el.textContent=t; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('hidden'), ms); };
 
-  // Seeded shuffle for per-player option order
   function seededShuffle(arr, seed) {
     const a = arr.slice(); let h = 2166136261 >>> 0;
     for (let i=0;i<seed.length;i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619) >>> 0;
@@ -57,26 +52,21 @@
     return a;
   }
 
-  // Audio
   const AudioMgr = (()=>{ try{ const C=new (window.AudioContext||window.webkitAudioContext)(); return { correct:()=>{const o=C.createOscillator(); const g=C.createGain(); o.type='sine'; o.frequency.value=880; g.gain.value=0.06; o.connect(g); g.connect(C.destination); o.start(); o.stop(C.currentTime+0.12); }, wrong:()=>{const o=C.createOscillator(); const g=C.createGain(); o.type='sawtooth'; o.frequency.value=220; g.gain.value=0.06; o.connect(g); g.connect(C.destination); o.start(); o.stop(C.currentTime+0.18); } }; }catch(e){ return { correct:()=>{}, wrong:()=>{} }; } })();
 
-  // Firebase init
   function initFirebase(){
     try{ appFirebase = firebase.initializeApp(firebaseConfig); db = firebase.database(); }
-    catch(e){ console.warn('Firebase init failed', e); toast('Firebase init failed - check config'); }
+    catch(e){ console.warn('Firebase init failed', e); toast('Firebase init failed'); }
   }
 
-  // Realtime refs
   const playersRef = () => db.ref(`games/${GAME_ID}/players`);
   const metaRef = () => db.ref(`games/${GAME_ID}/meta`);
 
   function uid(){ return 'p_' + Math.random().toString(36).slice(2,10); }
   function now(){ return Date.now(); }
 
-  // Presence helper
   function setPresence(payload){ if(!db || !playerId) return; const ref = db.ref(`games/${GAME_ID}/players/${playerId}`); ref.set(payload); try{ ref.onDisconnect().update({ connected:false, lastSeen: now() }); }catch(e){} }
 
-  // Write local state to DB
   function writeMyState(){ 
     if(!playerId || !db) return; 
     const payload = { 
@@ -93,7 +83,6 @@
     localStorage.setItem('sm-totalTime', String(myLocal.totalTime||0)); 
   }
 
-  // Render players & leaderboard
   function renderPlayers(){ 
     const list = $('#players-list'); 
     if(!list) return;
@@ -105,7 +94,6 @@
       list.appendChild(li); 
     }); 
     $('#players-count').textContent = `${arr.length} player${arr.length===1? '':'s'}`; 
-    renderLeaderboard(arr,'#leaderboard tbody'); 
     if($('#result-screen').classList.contains('active')) computeResults();
   }
 
@@ -120,7 +108,6 @@
     }); 
   }
 
-  // Attach DB listeners
   function attachListeners(){ if(!db) return; 
     playersRef().on('value', snap=>{
       const raw = snap.val() || {};
@@ -133,8 +120,6 @@
     metaRef().on('value', snap=>{
       gameMeta = snap.val();
       if(!gameMeta){ metaRef().set({ status: 'lobby' }); return; }
-      // Update admin UI whenever meta changes
-      updateAdminUI();
       if(gameMeta.status==='playing'){
         if($('#join-screen').classList.contains('active') || $('#lobby-screen').classList.contains('active')) {
            show('#game-screen');
@@ -148,7 +133,6 @@
     });
   }
 
-  // Game loop
   function startLoop(){ stopLoop(); tickInterval = setInterval(tick, 250); tick(); }
   function stopLoop(){ if(tickInterval) { clearInterval(tickInterval); tickInterval=null; } }
 
@@ -160,17 +144,23 @@
     const idx = currentIndex(); 
     const q = QUESTIONS[idx]; 
     if(!q){ 
-      myLocal.finished = true;
-      writeMyState();
+      myLocal.finished = true; writeMyState();
       metaRef().update({ status: 'ended', endTime: now() }); 
       return; 
     }
-    $('#question-stage').textContent = `${q.stage} • Q ${idx+1}/${TOTAL_QUESTIONS}`;
+    
+    // Check for timeout locally
+    const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
+    if(!answers[idx] && timeLeft() <= 0) {
+       submitAnswer(idx, null, q.correct); // force timeout
+    }
+
+    $('#question-stage').textContent = `📖 ${q.stage} • Q ${idx+1}/${TOTAL_QUESTIONS}`;
     $('#question-text').textContent = q.q;
     const seed = (playerId||'') + '|' + idx;
     const options = seededShuffle(q.options, seed);
     renderOptions(options, q.correct, idx);
-    $('#timer').textContent = timeLeft(); 
+    $('#timer').textContent = `⏱️ ${timeLeft()}`; 
     const pct = ((QUESTION_TIME - timeLeft())/QUESTION_TIME)*100; 
     $('#progress-bar').style.width = `${pct}%`;
   }
@@ -187,6 +177,8 @@
       if(myAns){ 
         if(opt===correct) d.classList.add('correct'); 
         if(myAns.answer===opt && opt!==correct) d.classList.add('wrong'); 
+        // If timed out, highlight correct answer
+        if(myAns.timedOut && opt===correct) d.classList.add('correct');
       } else { 
         d.addEventListener('click', ()=> submitAnswer(qIndex,opt,correct)); 
       } 
@@ -195,20 +187,37 @@
   }
 
   function submitAnswer(qIndex, selected, correct){ 
+    const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
+    if(answers[qIndex]) return;
+
     const start = gameMeta.startTime + qIndex*QUESTION_TIME*1000; 
     const t = Math.max(0, Math.round((Date.now()-start)/1000)); 
-    const correctAns = selected===correct; 
-    myLocal.score = (myLocal.score||0) + (correctAns?10:-5); 
-    myLocal.totalTime = (myLocal.totalTime||0) + Math.min(t, QUESTION_TIME); 
-    const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
-    answers[qIndex] = { answer:selected, time:t, correct: correctAns }; 
+    
+    let isCorrect = false;
+    let timedOut = (selected === null);
+
+    if(!timedOut) {
+      isCorrect = (selected === correct);
+      myLocal.score = (myLocal.score||0) + (isCorrect ? 10 : -5);
+      myLocal.totalTime = (myLocal.totalTime||0) + Math.min(t, QUESTION_TIME);
+    } else {
+      myLocal.score = (myLocal.score||0) - 5; // Penalty for timeout
+      myLocal.totalTime = (myLocal.totalTime||0) + QUESTION_TIME;
+    }
+
+    answers[qIndex] = { answer: selected, time: t, correct: isCorrect, timedOut: timedOut }; 
     localStorage.setItem('sm-answers', JSON.stringify(answers)); 
     
     if(qIndex === TOTAL_QUESTIONS - 1) myLocal.finished = true;
     writeMyState(); 
 
-    if(correctAns) { AudioMgr.correct(); $('#feedback').innerHTML='✅ Correct! <span style="color:#10b981">+10 pts</span>'; } 
-    else { AudioMgr.wrong(); $('#feedback').innerHTML=`❌ Wrong! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${QUESTIONS[qIndex].correct}</b>`; }
+    if(timedOut) {
+      AudioMgr.wrong(); $('#feedback').innerHTML = `⏰ Time's up! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${correct}</b>`;
+    } else if(isCorrect) { 
+      AudioMgr.correct(); $('#feedback').innerHTML = '✅ Correct! <span style="color:#10b981">+10 pts</span>'; 
+    } else { 
+      AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${correct}</b>`; 
+    }
   }
 
   function updateMyRank(){ 
@@ -218,61 +227,18 @@
     $('#my-score').textContent = `✨ Score: ${myLocal.score||0}`; 
   }
 
-  // Admin functions
-  function adminLogin(){ 
-    if(!playerId){ toast('⚠️ Join the game first to use admin'); return; } 
-    const user = $('#admin-username').value.trim(); 
-    const pass = $('#admin-password').value; 
-    if(user==='admin' && pass==='harshi'){ 
-      localStorage.setItem('sm-isAdmin','1'); 
-      metaRef().transaction(curr=>{ if(!curr) return { status: 'lobby', adminId: playerId }; curr.adminId = playerId; return curr; }); 
-      toast('🎉 Admin login successful!'); 
-      updateAdminUI(); 
-    } else { toast('❌ Invalid admin credentials'); } 
-  }
-  function updateAdminUI(){ 
-    const adminId = (gameMeta && gameMeta.adminId) ? gameMeta.adminId : null; 
-    if(adminId && adminId === playerId && localStorage.getItem('sm-isAdmin')){
-      $('#admin-login-form').classList.add('hidden');
-      $('#admin-actions').classList.remove('hidden');
-      populateAdminPlayers();
-    } else {
-      $('#admin-actions').classList.add('hidden');
-      $('#admin-login-form').classList.remove('hidden');
-    } 
-  }
-  function populateAdminPlayers(){ 
-    const el = $('#admin-players'); 
-    if(!el) return; 
-    el.innerHTML = ''; 
-    Object.values(players).forEach(p=>{ 
-      const li = document.createElement('li'); 
-      li.innerHTML = `${p.name} — ${p.score||0} pts <button class="btn" data-kick="${p.id}">Remove</button>`; 
-      el.appendChild(li); 
-    }); 
-    el.querySelectorAll('button[data-kick]').forEach(b=> b.addEventListener('click', e=>{ 
-      const id = e.currentTarget.dataset.kick; 
-      db.ref(`games/${GAME_ID}/players/${id}`).remove(); 
-      toast('Player removed'); 
-    })); 
-  }
-
-  // Compute final results view
   function computeResults(){ 
     const arr = Object.values(players);
     const totalPlayers = arr.length;
     const finishedPlayers = arr.filter(p => p.finished).length;
     const everyoneFinished = totalPlayers > 0 && finishedPlayers >= totalPlayers;
-
     const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
     renderLeaderboard(sortedArr,'#final-leaderboard tbody'); 
 
     const me = sortedArr.find(p=>p.id===playerId) || {}; 
     const percent = Math.max(0, Math.min(100, Math.round((me.score||0)/(TOTAL_QUESTIONS*10) * 100))); 
     let msg=''; 
-    if(percent>=90) msg='A+ Student 🔥'; 
-    else if(percent>=70) msg='Almost There 💪'; 
-    else msg='Need Better Habits 😅'; 
+    if(percent>=90) msg='A+ Student 🔥'; else if(percent>=70) msg='Almost There 💪'; else msg='Need Better Habits 😅'; 
     $('#result-summary').innerHTML = `<h3>${me.name||'You'} — ${me.score||0} pts</h3><p>${msg}</p>`; 
 
     if(everyoneFinished) {
@@ -284,7 +250,6 @@
     }
   }
 
-  // Join game
   function joinGame(name){ 
     if(!db){ toast('Firebase not initialized'); return; } 
     if(!playerId){ playerId = uid(); localStorage.setItem('sm-playerId', playerId); } 
@@ -294,85 +259,23 @@
     myLocal.totalTime = parseInt(localStorage.getItem('sm-totalTime')||'0',10) || 0; 
     myLocal.answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
     setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected: true, lastSeen: now(), finished: false });
-    try{ metaRef().transaction(curr=>{ if(!curr) return { status: 'lobby', hostId: playerId }; if(!curr.hostId) curr.hostId = playerId; return curr; }); }catch(e){ console.warn('host transaction failed', e); }
     show('#lobby-screen'); attachListeners(); 
   }
 
-  // UI bindings
   function bindUI(){ 
-    $('#join-btn').addEventListener('click', ()=>{ 
-      const n=$('#name-input').value.trim(); 
-      if(!n){ toast('Enter your name'); return; } 
-      joinGame(n); 
-    }); 
-    $('#leave-btn').addEventListener('click', ()=>{ 
-      if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false, lastSeen: now() }); 
-      show('#join-screen'); 
-    }); 
-    $('#leave-game-btn').addEventListener('click', ()=>{ 
-      if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false, lastSeen: now() }); 
-      show('#join-screen'); 
-    }); 
-    $('#back-lobby-btn').addEventListener('click', ()=>{ 
-      metaRef().set({ status: 'lobby' }); 
-      show('#lobby-screen'); 
-    }); 
-    $('#reset-local-btn').addEventListener('click', ()=>{ 
-      localStorage.clear(); 
-      toast('Local data reset'); 
-      location.reload(); 
-    });
-    // Admin login button
-    const adminLoginBtn = $('#admin-login-btn'); 
-    if(adminLoginBtn) adminLoginBtn.addEventListener('click', ()=> adminLogin());
-    // Admin actions
-    $('#admin-create-room-btn').addEventListener('click', ()=>{ 
-      if(!playerId){ toast('Join first'); return; } 
-      metaRef().set({ status: 'lobby', adminId: playerId }); 
-      toast('Room created'); 
-    });
-    $('#admin-start-btn').addEventListener('click', ()=>{ 
-      if(!playerId){ toast('Join first'); return; } 
-      metaRef().set({ status: 'playing', startTime: now(), adminId: playerId }); 
-      toast('Game started'); 
-    });
-    $('#admin-restart-btn').addEventListener('click', ()=>{ 
-      metaRef().set({ status: 'lobby' }); 
-      playersRef().once('value').then(s=>{ 
-        const val=s.val()||{}; 
-        Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0, finished: false })); 
-      }); 
-      localStorage.removeItem('sm-answers'); 
-      toast('Game restarted'); 
-    });
-    $('#admin-clear-scores-btn').addEventListener('click', ()=>{ 
-      playersRef().once('value').then(s=>{ 
-        const val=s.val()||{}; 
-        Object.keys(val).forEach(pid=> db.ref(`games/${GAME_ID}/players/${pid}`).update({ score:0, totalTime:0, finished: false })); 
-      }); 
-      toast('Scores cleared'); 
-    });
+    $('#join-btn').addEventListener('click', ()=>{ const n=$('#name-input').value.trim(); if(!n){ toast('✍️ Enter your name'); return; } joinGame(n); }); 
+    $('#leave-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false }); show('#join-screen'); }); 
+    $('#leave-game-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false }); show('#join-screen'); }); 
+    $('#back-lobby-btn').addEventListener('click', ()=>{ metaRef().set({ status: 'lobby' }); show('#lobby-screen'); }); 
+    $('#reset-local-btn').addEventListener('click', ()=>{ localStorage.clear(); toast('🧹 Data reset'); location.reload(); });
   }
 
-  // Init
   function init(){ 
-    initFirebase(); 
-    bindUI(); 
+    initFirebase(); bindUI(); 
     if(playerId && playerName){
-      try{ 
-        attachListeners(); 
-        setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected:true, lastSeen: now(), finished: !!myLocal.finished }); 
-        show('#lobby-screen'); 
-      }
-      catch(e){ console.warn(e); show('#join-screen'); }
+      try { attachListeners(); show('#lobby-screen'); } catch(e){ show('#join-screen'); }
     } else show('#join-screen'); 
-    try{ 
-      metaRef().once('value').then(s=>{ 
-        if(!s.exists()) metaRef().set({ status: 'lobby' }); 
-        else { gameMeta = s.val(); updateAdminUI(); } 
-      }); 
-    }catch(e){}
+    try { metaRef().once('value').then(s=>{ if(!s.exists()) metaRef().set({ status: 'lobby' }); else gameMeta = s.val(); }); }catch(e){}
   }
-
   window.addEventListener('load', init);
 })();
