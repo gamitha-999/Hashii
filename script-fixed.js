@@ -14,7 +14,6 @@
     appId: "REPLACE_ME"
   };
 
-  // QUESTIONS
   const QUESTIONS = [
     { q: "Exam is in 5 days. What should you do first?", correct: "Make a clear study timetable", options: ["Start studying random subjects","Make a clear study timetable","Read only your favorite subject","Watch study videos without planning"], stage: "Time Management" },
     { q: "Best place to study?", correct: "Quiet place with minimal distractions", options: ["Quiet place with minimal distractions","Slightly noisy place with music","Bed with comfort","Anywhere with phone nearby"], stage: "Avoid Distractions" },
@@ -28,7 +27,6 @@
     { q: "During exam?", correct: "Read carefully + manage time properly", options: ["Answer easy questions first","Read carefully + manage time properly","Spend more time on hard questions","Rush to finish early"], stage: "Exam Day Tips" }
   ];
 
-  // STATE
   let appFirebase, db;
   let playerId = localStorage.getItem('sm-playerId') || null;
   let playerName = localStorage.getItem('sm-playerName') || null;
@@ -56,7 +54,7 @@
 
   function initFirebase(){
     try{ appFirebase = firebase.initializeApp(firebaseConfig); db = firebase.database(); }
-    catch(e){ console.warn('Firebase init failed', e); toast('Firebase init failed'); }
+    catch(e){ console.warn('Firebase init failed', e); }
   }
 
   const playersRef = () => db.ref(`games/${GAME_ID}/players`);
@@ -87,7 +85,7 @@
     const list = $('#players-list'); 
     if(!list) return;
     list.innerHTML=''; 
-    const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
+    const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0)); 
     arr.forEach(p=>{ 
       const li=document.createElement('li'); 
       li.innerHTML=`<span>${p.name||'—'}</span><small class="muted">${p.connected? 'Online':'Offline'}${p.finished?' (Finished)':''}</small>`; 
@@ -149,13 +147,13 @@
       return; 
     }
     
-    // Check for timeout locally
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
+    // Automatic timeout handling
     if(!answers[idx] && timeLeft() <= 0) {
-       submitAnswer(idx, null, q.correct); // force timeout
+       submitAnswer(idx, null, q.correct);
     }
 
-    $('#question-stage').textContent = `📖 ${q.stage} • Q ${idx+1}/${TOTAL_QUESTIONS}`;
+    $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
     $('#question-text').textContent = q.q;
     const seed = (playerId||'') + '|' + idx;
     const options = seededShuffle(q.options, seed);
@@ -170,14 +168,15 @@
     el.innerHTML=''; 
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
     const myAns = answers[qIndex]; 
+    
     options.forEach(opt=>{ 
       const d=document.createElement('div'); 
       d.className='option'; 
       d.textContent = opt; 
       if(myAns){ 
+        d.classList.add('disabled');
         if(opt===correct) d.classList.add('correct'); 
         if(myAns.answer===opt && opt!==correct) d.classList.add('wrong'); 
-        // If timed out, highlight correct answer
         if(myAns.timedOut && opt===correct) d.classList.add('correct');
       } else { 
         d.addEventListener('click', ()=> submitAnswer(qIndex,opt,correct)); 
@@ -188,20 +187,19 @@
 
   function submitAnswer(qIndex, selected, correct){ 
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
-    if(answers[qIndex]) return;
+    if(answers[qIndex]) return; // prevent spam
 
     const start = gameMeta.startTime + qIndex*QUESTION_TIME*1000; 
     const t = Math.max(0, Math.round((Date.now()-start)/1000)); 
     
-    let isCorrect = false;
+    let isCorrect = (selected === correct);
     let timedOut = (selected === null);
 
     if(!timedOut) {
-      isCorrect = (selected === correct);
       myLocal.score = (myLocal.score||0) + (isCorrect ? 10 : -5);
       myLocal.totalTime = (myLocal.totalTime||0) + Math.min(t, QUESTION_TIME);
     } else {
-      myLocal.score = (myLocal.score||0) - 5; // Penalty for timeout
+      myLocal.score = (myLocal.score||0) - 5;
       myLocal.totalTime = (myLocal.totalTime||0) + QUESTION_TIME;
     }
 
@@ -211,28 +209,35 @@
     if(qIndex === TOTAL_QUESTIONS - 1) myLocal.finished = true;
     writeMyState(); 
 
+    // Show result feedback
     if(timedOut) {
-      AudioMgr.wrong(); $('#feedback').innerHTML = `⏰ Time's up! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${correct}</b>`;
+      AudioMgr.wrong(); $('#feedback').innerHTML = `⏰ Time's up! Correct: <b>${correct}</b>`;
     } else if(isCorrect) { 
       AudioMgr.correct(); $('#feedback').innerHTML = '✅ Correct! <span style="color:#10b981">+10 pts</span>'; 
     } else { 
-      AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! <span style="color:#ef4444">-5 pts</span>. Correct: <b>${correct}</b>`; 
+      AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
     }
+
+    // After answering, wait briefly then hide options to avoid confusion
+    setTimeout(() => {
+        if(currentIndex() === qIndex) {
+            $('#options').innerHTML = '<div class="card" style="text-align:center;width:100%">⏳ Please wait for the next question...</div>';
+            $('#feedback').innerHTML = 'Wait for others...';
+        }
+    }, 1500);
   }
 
   function updateMyRank(){ 
-    const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
+    const arr = Object.values(players).sort((a,b)=> (b.score||0)-(a.score||0)); 
     const idx = arr.findIndex(p=>p.id===playerId); 
-    $('#rank').textContent = idx>=0? `🏆 #${idx+1}`:'🏆 # -'; 
-    $('#my-score').textContent = `✨ Score: ${myLocal.score||0}`; 
+    $('#rank').textContent = `🏆 #${idx>=0? idx+1 : '-'}`; 
+    $('#my-score').textContent = `✨ ${myLocal.score||0}`; 
   }
 
   function computeResults(){ 
     const arr = Object.values(players);
-    const totalPlayers = arr.length;
-    const finishedPlayers = arr.filter(p => p.finished).length;
-    const everyoneFinished = totalPlayers > 0 && finishedPlayers >= totalPlayers;
-    const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
+    const everyoneFinished = arr.length > 0 && arr.every(p => p.finished);
+    const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0)); 
     renderLeaderboard(sortedArr,'#final-leaderboard tbody'); 
 
     const me = sortedArr.find(p=>p.id===playerId) || {}; 
@@ -251,7 +256,7 @@
   }
 
   function joinGame(name){ 
-    if(!db){ toast('Firebase not initialized'); return; } 
+    if(!db){ toast('Firebase not ready'); return; } 
     if(!playerId){ playerId = uid(); localStorage.setItem('sm-playerId', playerId); } 
     playerName = name || ('Player-'+playerId.slice(-4)); 
     localStorage.setItem('sm-playerName', playerName);
@@ -264,9 +269,6 @@
 
   function bindUI(){ 
     $('#join-btn').addEventListener('click', ()=>{ const n=$('#name-input').value.trim(); if(!n){ toast('✍️ Enter your name'); return; } joinGame(n); }); 
-    $('#leave-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false }); show('#join-screen'); }); 
-    $('#leave-game-btn').addEventListener('click', ()=>{ if(playerId) db.ref(`games/${GAME_ID}/players/${playerId}`).update({ connected:false }); show('#join-screen'); }); 
-    $('#back-lobby-btn').addEventListener('click', ()=>{ metaRef().set({ status: 'lobby' }); show('#lobby-screen'); }); 
     $('#reset-local-btn').addEventListener('click', ()=>{ localStorage.clear(); toast('🧹 Data reset'); location.reload(); });
   }
 
