@@ -34,6 +34,7 @@
   let players = {};
   let gameMeta = null;
   let tickInterval = null;
+  let hasJoined = false; // Track if user has clicked "Join"
 
   const $ = s => document.querySelector(s);
   const show = sel => { 
@@ -95,7 +96,6 @@
       list.appendChild(li); 
     }); 
     $('#players-count').textContent = `${arr.length} player${arr.length===1? '':'s'}`; 
-    // Always check results if we are on result screen
     if($('#result-screen').classList.contains('active')) computeResults();
   }
 
@@ -123,8 +123,11 @@
     metaRef().on('value', snap=>{
       gameMeta = snap.val();
       if(!gameMeta){ metaRef().set({ status: 'lobby' }); return; }
+      
+      if(!hasJoined) return; // Don't switch screens if user hasn't joined yet
+
       if(gameMeta.status==='playing'){
-        if($('#join-screen').classList.contains('active') || $('#lobby-screen').classList.contains('active')) {
+        if($('#lobby-screen').classList.contains('active') || $('#join-screen').classList.contains('active')){
            show('#game-screen');
            startLoop();
         }
@@ -147,10 +150,8 @@
     const idx = currentIndex(); 
     const elapsed = Math.floor((Date.now()-gameMeta.startTime)/1000);
 
-    // If global time is up for all questions
     if(elapsed >= TOTAL_QUESTIONS * QUESTION_TIME){ 
       myLocal.finished = true; writeMyState();
-      // Only one person needs to trigger global 'ended'
       if(gameMeta.hostId === playerId || !gameMeta.hostId) metaRef().update({ status: 'ended', endTime: now() }); 
       return; 
     }
@@ -185,7 +186,6 @@
         d.classList.add('disabled');
         if(opt===correct) d.classList.add('correct'); 
         if(myAns.answer===opt && opt!==correct) d.classList.add('wrong'); 
-        if(myAns.timedOut && opt===correct) d.classList.add('correct');
       } else { 
         d.addEventListener('click', ()=> submitAnswer(qIndex,opt,correct)); 
       } 
@@ -242,10 +242,8 @@
 
   function computeResults(){ 
     const arr = Object.values(players);
-    // Filter active players (those seen in last 2 mins)
     const activeThreshold = now() - 120000;
     const activePlayers = arr.filter(p => p.lastSeen > activeThreshold || p.connected);
-    
     const everyoneFinished = activePlayers.length > 0 && activePlayers.every(p => p.finished);
     const sortedArr = arr.sort((a,b)=> (b.score||0)-(a.score||0) || (a.totalTime||0)-(b.totalTime||0)); 
     
@@ -261,8 +259,6 @@
     if(everyoneFinished) {
       $('#waiting-for-others').classList.add('hidden');
       $('#final-leaderboard-container').classList.remove('hidden');
-      // Highlight winner
-      if(sortedArr[0]) toast(`🎉 Winner: ${sortedArr[0].name}!`);
     } else {
       $('#waiting-for-others').classList.remove('hidden');
       $('#final-leaderboard-container').classList.add('hidden');
@@ -271,6 +267,7 @@
 
   function joinGame(name){ 
     if(!db){ toast('Firebase not ready'); return; } 
+    hasJoined = true;
     if(!playerId){ playerId = uid(); localStorage.setItem('sm-playerId', playerId); } 
     playerName = name || ('Player-'+playerId.slice(-4)); 
     localStorage.setItem('sm-playerName', playerName);
@@ -279,7 +276,15 @@
     myLocal.answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
     myLocal.finished = false;
     setPresence({ id: playerId, name: playerName, score: myLocal.score, totalTime: myLocal.totalTime, connected: true, lastSeen: now(), finished: false });
-    show('#lobby-screen'); attachListeners(); 
+    
+    // Switch screen based on game status
+    if(gameMeta && gameMeta.status === 'playing') {
+      show('#game-screen');
+      startLoop();
+    } else {
+      show('#lobby-screen');
+    }
+    attachListeners(); 
   }
 
   function bindUI(){ 
@@ -289,10 +294,15 @@
 
   function init(){ 
     initFirebase(); bindUI(); 
-    if(playerId && playerName){
-      try { attachListeners(); show('#lobby-screen'); } catch(e){ show('#join-screen'); }
-    } else show('#join-screen'); 
-    try { metaRef().once('value').then(s=>{ if(!s.exists()) metaRef().set({ status: 'lobby' }); else gameMeta = s.val(); }); }catch(e){}
+    show('#join-screen');
+    if(playerName) $('#name-input').value = playerName;
+
+    try { 
+      metaRef().once('value').then(s=>{ 
+        if(!s.exists()) metaRef().set({ status: 'lobby' }); 
+        else gameMeta = s.val();
+      }); 
+    } catch(e){}
   }
   window.addEventListener('load', init);
 })();
