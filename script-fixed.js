@@ -123,6 +123,25 @@
     metaRef().on('value', snap=>{
       gameMeta = snap.val();
       if(!gameMeta){ metaRef().set({ status: 'lobby' }); return; }
+
+      // Handle Reset
+      const lastResetId = localStorage.getItem('sm-lastResetId');
+      if(gameMeta.resetId && gameMeta.resetId != lastResetId) {
+        localStorage.setItem('sm-lastResetId', gameMeta.resetId);
+        // Clear local progress
+        localStorage.removeItem('sm-score');
+        localStorage.removeItem('sm-totalTime');
+        localStorage.removeItem('sm-answers');
+        myLocal = { score: 0, totalTime: 0, answers: {}, finished: false };
+        
+        if(hasJoined) {
+          toast('🔄 Game has been reset');
+          // If we were playing or finished, go back to lobby
+          if(gameMeta.status === 'lobby') show('#lobby-screen');
+          // Re-register presence in DB with reset values
+          setPresence({ id: playerId, name: playerName, score: 0, totalTime: 0, connected: true, lastSeen: now(), finished: false });
+        }
+      }
       
       // Update screens ONLY if joined
       if(hasJoined) {

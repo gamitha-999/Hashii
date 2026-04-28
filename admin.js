@@ -56,11 +56,32 @@
     $('#adm-logout').addEventListener('click', ()=>{ sessionStorage.removeItem('sm-admin-auth'); // remove adminId from meta
       db.ref('games/default-game/meta/adminId').remove(); showLogin(); });
 
-    $('#create-room').addEventListener('click', ()=>{ db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin' }); alert('Room created'); });
+    $('#create-room').addEventListener('click', ()=>{ db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin', resetId: Date.now() }); alert('Room created'); });
     $('#start-game').addEventListener('click', ()=>{ db.ref('games/default-game/meta').update({ status: 'playing', startTime: Date.now(), adminId: 'admin' }); });
-    $('#restart-game').addEventListener('click', ()=>{ db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin' }); db.ref('games/default-game/players').once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/default-game/players/${pid}`).update({ score:0, totalTime:0 })); }); });
-    $('#clear-scores').addEventListener('click', ()=>{ db.ref('games/default-game/players').once('value').then(s=>{ const val=s.val()||{}; Object.keys(val).forEach(pid=> db.ref(`games/default-game/players/${pid}`).update({ score:0, totalTime:0 })); }); });
-    $('#adm-clear-all').addEventListener('click', ()=>{ if(confirm('Are you sure you want to clear ALL game data?')){ db.ref('games/default-game').remove(); alert('All data cleared'); location.reload(); } });
+    $('#restart-game').addEventListener('click', ()=>{ 
+      if(confirm('Restart game? This will clear all player progress.')){
+        db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin', resetId: Date.now() }); 
+        db.ref('games/default-game/players').remove(); 
+      }
+    });
+    $('#clear-scores').addEventListener('click', ()=>{ 
+      if(confirm('Clear all scores?')){
+        db.ref('games/default-game/meta').update({ resetId: Date.now() });
+        db.ref('games/default-game/players').once('value').then(s=>{ 
+          const val=s.val()||{}; 
+          Object.keys(val).forEach(pid=> db.ref(`games/default-game/players/${pid}`).update({ score:0, totalTime:0, finished: false })); 
+        }); 
+      }
+    });
+    $('#adm-clear-all').addEventListener('click', ()=>{ 
+      if(confirm('Are you sure you want to clear ALL game data?')){ 
+        db.ref('games/default-game').remove().then(() => {
+          db.ref('games/default-game/meta').set({ status: 'lobby', adminId: 'admin', resetId: Date.now() });
+          alert('All data cleared'); 
+          location.reload(); 
+        });
+      } 
+    });
   }
 
   function attachDBListeners(){ const playersRef = db.ref('games/default-game/players'); const metaRef = db.ref('games/default-game/meta');
