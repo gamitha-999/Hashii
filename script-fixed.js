@@ -329,9 +329,40 @@
     }
   }
 
+  function leaveGame(isManual = true){
+    if(!db || !playerId) return;
+    
+    // Confirm if leaving during a game
+    if(isManual && gameMeta && gameMeta.status === 'playing' && !myLocal.finished) {
+      if(!confirm('🏃 Are you sure you want to leave the game? Your progress will be lost.')) return;
+    }
+
+    // Remove from Firebase
+    db.ref(`games/${GAME_ID}/players/${playerId}`).remove()
+      .then(() => {
+        if(isManual) toast('🏃 You left the game');
+      })
+      .catch(e => console.error('Error leaving:', e));
+
+    // Reset State
+    hasJoined = false;
+    stopLoop();
+    
+    // Clear some local state but keep name for convenience
+    myLocal = { score: 0, totalTime: 0, answers: {}, finished: false, currentQ: 0, qStartTime: 0 };
+    localStorage.removeItem('sm-score');
+    localStorage.removeItem('sm-totalTime');
+    localStorage.removeItem('sm-answers');
+
+    show('#join-screen');
+  }
+
   function bindUI(){ 
     $('#join-btn').addEventListener('click', ()=>{ const n=$('#name-input').value.trim(); if(!n){ toast('✍️ Enter your name'); return; } joinGame(n); }); 
     $('#reset-local-btn').addEventListener('click', ()=>{ if(confirm('Clear all local data?')) { localStorage.clear(); toast('🧹 Data reset'); location.reload(); } });
+    $('#leave-btn').addEventListener('click', leaveGame);
+    $('#leave-game-btn').addEventListener('click', leaveGame);
+    $('#back-lobby-btn').addEventListener('click', ()=>{ show('#lobby-screen'); });
   }
 
   function init(){ 

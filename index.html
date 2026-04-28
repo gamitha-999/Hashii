@@ -2,129 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
   <title>Study Master Challenge</title>
   <link rel="stylesheet" href="style-fixed.css" />
 </head>
 <body>
   <div id="app">
-    <!-- Splash / Join -->
+    <!-- Screen: Join -->
     <section id="join-screen" class="screen active">
       <div class="card">
-        <h1>🎓 Study Master Challenge</h1>
+        <h1>🎓 Study Master</h1>
         <p class="subtitle">Can you get A+ in your exam? 🚀</p>
         <input id="name-input" placeholder="✍️ Enter your name" maxlength="24" />
-        <div class="row">
-          <button id="join-btn" class="btn primary">Join Game 🎮</button>
-          <button class="btn" onclick="location.href='admin.html'">Admin Login 🔑</button>
-        </div>
-        <small class="muted">Enter your name to join the lobby</small>
+        <button id="join-btn" class="btn primary">Join Game 🎮</button>
+        <button class="btn" onclick="location.href='admin.html'">Admin Login 🔑</button>
+        <p class="muted" style="text-align:center; margin-top:10px">Enter your name to join the lobby</p>
       </div>
     </section>
 
-    <!-- Lobby -->
+    <!-- Screen: Lobby -->
     <section id="lobby-screen" class="screen">
-      <div class="topbar">
-        <h2>🏠 Lobby</h2>
-        <div id="lobby-controls">
-          <span id="players-count">0 players</span>
-        </div>
+      <div class="card">
+        <h3>👥 Waiting Room</h3>
+        <p class="muted" id="players-count" style="margin-bottom:15px">0 players</p>
+        <ul id="players-list" class="players-list"></ul>
       </div>
-      <div class="content">
-        <div class="left">
-          <div class="card">
-            <h3>👥 Waiting Room</h3>
-            <ul id="players-list" class="players-list"></ul>
-            <div class="meta" style="margin-top:20px">
-              <button id="leave-btn" class="btn danger">Leave Game 🏃</button>
-            </div>
-          </div>
-        </div>
-        <div class="right">
-          <div class="card">
-            <h3>ℹ️ Game Info</h3>
-            <p>Mode: 📝 Live Quiz for students</p>
-            <p>Players will be synced live. Host can start the game for everyone.</p>
-            
-            <div class="card small">
-              <h4>📚 Learning Stages</h4>
-              <ol>
-                <li>⏰ Time Management</li>
-                <li>🚫 Avoid Distractions</li>
-                <li>💡 Smart Study Methods</li>
-                <li>🔄 Revision</li>
-                <li>🎯 Exam Day Tips</li>
-              </ol>
-            </div>
-          </div>
-        </div>
+      
+      <div class="card">
+        <h3>ℹ️ Game Info</h3>
+        <p>Mode: 📝 Live Quiz</p>
+        <p class="muted">Wait for the host to start the game. All players will sync live.</p>
       </div>
+
+      <button id="leave-btn" class="btn danger">Leave Game 🏃</button>
     </section>
 
-    <!-- Game screen -->
+    <!-- Screen: Game -->
     <section id="game-screen" class="screen">
       <div class="game-card">
         <div class="game-header">
-          <div>
-            <h2 id="question-stage">📖 Stage</h2>
-            <h1 id="question-text">Question text</h1>
-          </div>
+          <p id="question-stage">📖 Stage 0/0</p>
+          <h2 id="question-text">Question text</h2>
+          
           <div class="scoreboard-mini">
             <div id="rank">🏆 # -</div>
-            <div id="my-score">✨ Score: 0</div>
+            <div id="my-score">✨ 0</div>
             <div id="timer">⏱️ 20</div>
           </div>
         </div>
         
-        <div id="progress-wrap">
-          <div id="progress-bar"></div>
-        </div>
+        <div id="progress-wrap"><div id="progress-bar"></div></div>
 
         <div id="options" class="options"></div>
+        <div id="feedback" class="feedback"></div>
 
-        <div class="game-footer">
-          <div id="feedback" class="feedback"></div>
-          <div class="row">
-            <button id="leave-game-btn" class="btn danger">Leave 🏃</button>
-            <button id="try-again-btn" class="btn hidden">Try Again 🔄</button>
-          </div>
-        </div>
+        <button id="leave-game-btn" class="btn danger">Leave Game 🏃</button>
       </div>
     </section>
 
-    <!-- Result screen -->
+    <!-- Screen: Result -->
     <section id="result-screen" class="screen">
       <div class="card">
-        <h2>🎉 Final Results</h2>
-        <div id="result-summary" class="result-summary"></div>
+        <h1>🎉 Finished!</h1>
+        <div id="result-summary" style="text-align:center; margin-bottom:20px"></div>
         
-        <div id="waiting-for-others" class="card">
-          <h3>⏳ Please Wait...</h3>
-          <p>Waiting for other players to finish their exam. The leaderboard will be revealed shortly! 📊</p>
+        <div id="waiting-for-others">
+          <h3>⏳ Waiting for others...</h3>
           <div class="loader"></div>
         </div>
 
-        <div id="final-leaderboard-container" class="card hidden">
+        <div id="final-leaderboard-container" class="hidden">
           <h3>🏆 Final Leaderboard</h3>
           <table id="final-leaderboard" class="leaderboard">
-            <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time (s)</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Pts</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
-        <div class="row">
-          <button id="back-lobby-btn" class="btn">🏠 Back to Lobby</button>
-          <button id="reset-local-btn" class="btn">🧹 Reset Local Data</button>
-        </div>
+      </div>
+
+      <div class="row">
+        <button id="back-lobby-btn" class="btn primary">🏠 Lobby</button>
+        <button id="reset-local-btn" class="btn">🧹 Reset</button>
       </div>
     </section>
-
-
 
     <!-- Toasts -->
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <!-- Firebase SDK and app script -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="script-fixed.js"></script>
