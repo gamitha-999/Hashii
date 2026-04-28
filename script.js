@@ -97,21 +97,33 @@
     }
   }
 
+  let myShuffledQuestions = [];
+
+  function shuffleArray(array) {
+    const arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   function startQuiz(){
     myLocal.currentQ = 0;
     myLocal.score = 0;
     myLocal.finished = false;
+    myShuffledQuestions = shuffleArray(QUESTIONS);
     nextQuestion();
     if(!tickInterval) tickInterval = setInterval(updateTimer, 500);
   }
 
   function nextQuestion(){
-    if(myLocal.currentQ >= QUESTIONS.length){
+    if(myLocal.currentQ >= myShuffledQuestions.length){
       finish();
       return;
     }
     myLocal.qStartTime = Date.now();
-    const q = QUESTIONS[myLocal.currentQ];
+    const q = myShuffledQuestions[myLocal.currentQ];
     $('#question-stage').textContent = `Q ${myLocal.currentQ + 1} / ${QUESTIONS.length}`;
     $('#question-text').textContent = q.q;
     const opts = $('#options');
@@ -128,7 +140,7 @@
   function submit(ans, el){
     if(myLocal.finished || myLocal.submitting) return;
     myLocal.submitting = true;
-    const q = QUESTIONS[myLocal.currentQ];
+    const q = myShuffledQuestions[myLocal.currentQ];
     const isCorrect = (ans === q.correct);
     
     const allOptions = document.querySelectorAll('.option');
