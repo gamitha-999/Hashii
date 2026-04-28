@@ -159,8 +159,14 @@
     });
   }
 
+  let myShuffledQuestions = [];
+
   function startLoop(){ 
     stopLoop(); 
+    
+    // Seeded shuffle of the entire QUESTIONS array based on playerId
+    myShuffledQuestions = seededShuffle(QUESTIONS, (playerId || 'default'));
+    
     myLocal.currentQ = 0; 
     myLocal.qStartTime = now(); 
     myLocal.finished = false;
@@ -173,7 +179,7 @@
     if(!gameMeta || gameMeta.status!=='playing' || myLocal.finished) return; 
     
     const idx = myLocal.currentQ;
-    if(idx >= TOTAL_QUESTIONS) {
+    if(idx >= TOTAL_QUESTIONS || idx >= myShuffledQuestions.length) {
        myLocal.finished = true;
        writeMyState();
        stopLoop();
@@ -185,7 +191,7 @@
     const elapsed = Math.floor((now() - myLocal.qStartTime)/1000);
     const timeLeft = Math.max(0, QUESTION_TIME - elapsed);
     
-    const q = QUESTIONS[idx];
+    const q = myShuffledQuestions[idx];
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
     
     // Auto-submit if time runs out
@@ -195,8 +201,10 @@
 
     $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
     $('#question-text').textContent = q.q;
-    const seed = (playerId||'') + '|' + idx;
-    const options = seededShuffle(q.options, seed);
+    
+    // Shuffle options uniquely for this question and this player
+    const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q.slice(0,5));
+    const options = seededShuffle(q.options, optSeed);
     renderOptions(options, q.correct, idx);
     
     $('#timer').textContent = `⏱️ ${timeLeft}`; 
