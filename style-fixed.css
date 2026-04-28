@@ -199,15 +199,31 @@ input:focus { border-color: var(--primary); background: rgba(15, 23, 42, 0.8); }
   margin-bottom: 12px;
 }
 
-.players-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.players-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.03);
+/* Player List Scroll Fix */
+.players-list { 
+  list-style: none; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  max-height: 200px; /* Limit height so it doesn't push buttons off-screen */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom Scrollbar for better mobile look */
+.players-list::-webkit-scrollbar { width: 4px; }
+.players-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+/* Ensure the app doesn't cut off at the bottom */
+#app {
+  padding-bottom: 40px; 
+}
+
+/* Adjust Game Header for ultra-small screens */
+@media (max-width: 360px) {
+  h1 { font-size: 1.5rem; }
+  #question-text { font-size: 1.1rem; }
+  .scoreboard-mini div { font-size: 0.7rem; padding: 8px 4px; }
 }
 
 .leaderboard { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
