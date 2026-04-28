@@ -318,12 +318,8 @@ input:focus {
   color: #991b1b;
 }
 
-.feedback {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
-  min-height: 24px;
-}
+.feedback { display: none !important; }
+
 
 /* Results */
 .leaderboard {
@@ -403,3 +399,18 @@ input:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  #app { padding: 12px; max-width: 100%; }
+  .card { padding: 16px; border-radius: 10px; }
+  h1 { font-size: 1.4rem; }
+  #question-text { font-size: 1.1rem; min-height: 48px; }
+  .options { grid-template-columns: 1fr; gap: 10px; }
+  .option { padding: 14px; font-size: 1.02rem; min-height: 56px; }
+  .scoreboard-mini { flex-wrap: wrap; gap: 8px; font-size: 0.85rem; }
+  .btn { padding: 12px; font-size: 0.95rem; }
+  #progress-wrap { height: 10px; }
+  .players-list { max-height: 160px; }
+}
+

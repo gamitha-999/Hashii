@@ -220,7 +220,7 @@
     if (currentRenderedQ !== idx) {
       $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
       $('#question-text').textContent = q.q;
-      $('#feedback').innerHTML = ''; // Clear feedback for new question
+      // feedback area intentionally unused; using toasts for brief feedback on mobile
       
       const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
       const options = seededShuffle(q.options || [], optSeed);
@@ -279,11 +279,11 @@
     writeMyState(); 
 
     if(timedOut) {
-      AudioMgr.wrong(); $('#feedback').innerHTML = `⏰ Time's up! Correct: <b>${correct}</b>`;
-    } else if(isCorrect) { 
-      AudioMgr.correct(); $('#feedback').innerHTML = '✅ Correct! <span style="color:#10b981">+10 pts</span>'; 
-    } else { 
-      AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
+      AudioMgr.wrong(); toast(`⏰ Time's up! Correct: ${correct}`);
+    } else if(isCorrect) {
+      AudioMgr.correct(); toast('✅ Correct! +10 pts');
+    } else {
+      AudioMgr.wrong(); toast(`❌ Wrong! Correct: ${correct}`);
     }
 
     // Force re-render of current question to show correct/wrong feedback
