@@ -185,14 +185,27 @@
   function renderFinalLeaderboard(){
     const tbody = $('#final-leaderboard tbody');
     if(!tbody) return;
-    tbody.innerHTML = '';
-    const sorted = Object.values(players).sort((a,b) => b.score - a.score).slice(0, 3);
-    sorted.forEach((p, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p.score}</td>`;
-      tbody.appendChild(tr);
-    });
+    
+    const allPlayers = Object.values(players);
+    const everyoneFinished = allPlayers.length > 0 && allPlayers.every(p => p.finished);
+
     $('#result-summary').innerHTML = `<h2>Your Score: ${myLocal.score}</h2>`;
+
+    if (everyoneFinished) {
+      $('#waiting-msg').classList.add('hidden');
+      $('#final-results').classList.remove('hidden');
+      
+      tbody.innerHTML = '';
+      const sorted = allPlayers.sort((a,b) => b.score - a.score).slice(0, 3);
+      sorted.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p.score}</td>`;
+        tbody.appendChild(tr);
+      });
+    } else {
+      $('#waiting-msg').classList.remove('hidden');
+      $('#final-results').classList.add('hidden');
+    }
   }
 
   window.onload = init;

@@ -40,11 +40,20 @@
         <section id="result-screen" class="screen">
             <h1>Results</h1>
             <div id="result-summary" style="text-align:center; margin-bottom:20px"></div>
-            <h3>🏆 Top 3 Students</h3>
-            <table class="leaderboard" id="final-leaderboard">
-                <thead><tr><th>Rank</th><th>Name</th><th>Score</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            
+            <div id="waiting-msg" style="text-align:center; padding: 20px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
+                <h3>⏳ Waiting for others...</h3>
+                <p style="font-size: 0.9rem; color: #92400e;">The final scoreboard will appear once all students finish the quiz.</p>
+            </div>
+
+            <div id="final-results" class="hidden">
+                <h3 style="margin-top:20px">🏆 Top 3 Students</h3>
+                <table class="leaderboard" id="final-leaderboard">
+                    <thead><tr><th>Rank</th><th>Name</th><th>Score</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
             <button id="back-lobby-btn" class="btn primary" style="margin-top:20px">Back to Home</button>
         </section>
     </div>
