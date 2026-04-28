@@ -3,7 +3,7 @@
   // CONFIG
   const GAME_ID = 'default-game';
   const QUESTION_TIME = 20;
-  const TOTAL_QUESTIONS = 10;
+  
   const firebaseConfig = {
     apiKey: "REPLACE_ME",
     authDomain: "REPLACE_ME",
@@ -18,16 +18,16 @@
     { q: "Exam is in 5 days. What should you do first?", correct: "Make a clear study timetable", options: ["Start studying random subjects","Make a clear study timetable","Read only your favorite subject","Watch study videos without planning"], stage: "Time Management" },
     { q: "Best place to study?", correct: "Quiet place with minimal distractions", options: ["Quiet place with minimal distractions","Slightly noisy place with music","Bed with comfort","Anywhere with phone nearby"], stage: "Avoid Distractions" },
     { q: "Best way to remember lessons?", correct: "Active recall + practice questions", options: ["Read notes multiple times","Highlight everything","Active recall + practice questions","Watch explanation videos only"], stage: "Smart Study Methods" },
-    { q: "Study session timing?", correct: "25–50 minutes with short breaks", options: ["20 minutes then break","25–50 minutes with short breaks","2 hours nonstop","Study only when you feel like"], stage: "Time Management" },
+    { q: "Study session timing?", correct: "25-50 minutes with short breaks", options: ["20 minutes then break","25-50 minutes with short breaks","2 hours nonstop","Study only when you feel like"], stage: "Time Management" },
     { q: "Phone usage while studying?", correct: "Keep it away or turn it off", options: ["Keep it silent near you","Use only for study apps","Keep it away or turn it off","Check it during breaks only"], stage: "Avoid Distractions" },
     { q: "Before exam day?", correct: "Revise important notes", options: ["Revise important notes","Study everything again quickly","Focus on weak areas only","Learn new lessons"], stage: "Revision" },
     { q: "Night before exam?", correct: "Revise lightly and sleep well", options: ["Revise lightly and sleep well","Study till very late night","Wake up early and study more","Stay awake whole night"], stage: "Exam Day Tips" },
-    { q: "Don’t understand a lesson?", correct: "Ask teacher/friends + practice", options: ["Re-read notes again","Watch videos again","Ask teacher/friends + practice","Skip and come back later"], stage: "Smart Study Methods" },
+    { q: "Don't understand a lesson?", correct: "Ask teacher/friends + practice", options: ["Re-read notes again","Watch videos again","Ask teacher/friends + practice","Skip and come back later"], stage: "Smart Study Methods" },
     { q: "Time management method?", correct: "Make a clear study timetable", options: ["Make a flexible plan","Make a clear study timetable","Study based on mood","Do easiest subjects first always"], stage: "Time Management" },
     { q: "During exam?", correct: "Read carefully + manage time properly", options: ["Answer easy questions first","Read carefully + manage time properly","Spend more time on hard questions","Rush to finish early"], stage: "Exam Day Tips" }
   ];
 
-  let appFirebase, db;
+  const TOTAL_QUESTIONS = QUESTIONS.length;
   let playerId = localStorage.getItem('sm-playerId') || null;
   let playerName = localStorage.getItem('sm-playerName') || null;
   let myLocal = { score: 0, totalTime: 0, answers: {}, finished: false, currentQ: 0, qStartTime: 0 };

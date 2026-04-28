@@ -14,7 +14,7 @@
     { q: "Exam is in 5 days. What should you do first?", options: ["Start cramming all night","Make a clear study timetable","Only study the hardest topic","Wait until the last day to start"] , correct: "Make a clear study timetable"},
     { q: "Best place to study?", options: ["In a crowded cafe with loud music","Quiet place with minimal distractions","Only when you're watching videos","On your bed while lying down"], correct: "Quiet place with minimal distractions"},
     { q: "Best way to remember lessons?", options: ["Only re-reading notes","Active recall + practice questions","Highlight everything in textbooks","Memorize by hearing music"], correct: "Active recall + practice questions"},
-    { q: "Study session timing?", options: ["25–50 minutes with short breaks","Study for 6 hours straight","Study 1 minute each topic","All-night sessions only"], correct: "25–50 minutes with short breaks"},
+    { q: "Study session timing?", options: ["25-50 minutes with short breaks","Study for 6 hours straight","Study 1 minute each topic","All-night sessions only"], correct: "25-50 minutes with short breaks"},
     { q: "Phone usage while studying?", options: ["Keep it away or turn it off","Check every notification","Use social media for breaks every 2 minutes","Never charge your phone while studying"], correct: "Keep it away or turn it off"},
     { q: "Before exam day?", options: ["Memorize new chapters last minute","Revise important notes","Try new study methods the same day","Skip sleep for full revision"], correct: "Revise important notes"},
     { q: "Night before exam?", options: ["Pull an all-nighter","Practice only new topics","Revise lightly and sleep well","Skip breakfast and rush to exam"], correct: "Revise lightly and sleep well"},
