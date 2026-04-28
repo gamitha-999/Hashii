@@ -8,14 +8,24 @@
 </head>
 <body>
     <div id="app">
-        <section class="screen active">
+        <!-- Login Screen -->
+        <section id="login-screen" class="screen active">
+            <h1>Admin Login</h1>
+            <input id="adm-user" type="text" placeholder="Username">
+            <input id="adm-pass" type="password" placeholder="Password">
+            <button id="login-btn" class="btn primary">Login</button>
+            <button class="btn" onclick="location.href='index.html'">Back</button>
+        </section>
+
+        <!-- Admin Panel -->
+        <section id="admin-panel" class="screen">
             <h1>Admin Panel</h1>
             <div id="room-status" style="text-align:center; margin-bottom:20px; font-weight:bold;">Status: Loading...</div>
-            <button id="start-game" class="btn primary">Start Quiz</button>
-            <button id="reset-game" class="btn danger">Reset Game</button>
-            <button class="btn" onclick="location.href='index.html'">Back to Quiz</button>
+            <button id="start-game" class="btn primary">Start Quiz for All</button>
+            <button id="reset-game" class="btn danger">Reset Game / Clear Players</button>
+            <button id="logout-btn" class="btn">Logout</button>
             
-            <h3 style="margin-top:20px">Players</h3>
+            <h3 style="margin-top:20px">Joined Players (<span id="count">0</span>)</h3>
             <ul id="players-list"></ul>
         </section>
     </div>

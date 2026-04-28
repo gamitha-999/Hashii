@@ -39,5 +39,6 @@ input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd;
 .leaderboard { width: 100%; border-collapse: collapse; margin-top: 20px; }
 .leaderboard th, .leaderboard td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
 
-ul { list-style: none; margin: 15px 0; }
-li { padding: 8px; border-bottom: 1px solid #eee; }
+ul { list-style: none; margin: 15px 0; max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 5px; }
+li { padding: 10px; border-bottom: 1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; }
+li:last-child { border-bottom: none; }

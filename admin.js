@@ -11,17 +11,34 @@
   };
 
   let db;
+  const $ = s => document.querySelector(s);
+  const show = sel => { document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); $(sel).classList.add('active'); };
 
   function init(){
     const app = firebase.initializeApp(firebaseConfig);
     db = firebase.database();
 
+    $('#login-btn').onclick = () => {
+      const u = $('#adm-user').value;
+      const p = $('#adm-pass').value;
+      if(u === 'admin' && p === 'harshi') {
+        show('#admin-panel');
+        attachAdminListeners();
+      } else {
+        alert('Wrong Username or Password');
+      }
+    };
+
+    $('#logout-btn').onclick = () => location.reload();
+  }
+
+  function attachAdminListeners(){
     $('#start-game').onclick = () => {
       db.ref(`games/${GAME_ID}/meta`).set({ status: 'playing', startTime: Date.now() });
     };
 
     $('#reset-game').onclick = () => {
-      if(confirm('Reset game and clear all scores?')) {
+      if(confirm('Clear all players and reset to Lobby?')) {
         db.ref(`games/${GAME_ID}`).remove();
         db.ref(`games/${GAME_ID}/meta`).set({ status: 'lobby' });
       }
@@ -29,21 +46,23 @@
 
     db.ref(`games/${GAME_ID}/meta`).on('value', s => {
       const status = (s.val() && s.val().status) || 'lobby';
-      $('#room-status').textContent = `Status: ${status.toUpperCase()}`;
+      $('#room-status').textContent = `Room Status: ${status.toUpperCase()}`;
     });
 
     db.ref(`games/${GAME_ID}/players`).on('value', s => {
       const players = s.val() || {};
       const list = $('#players-list');
       list.innerHTML = '';
-      Object.entries(players).forEach(([id, p]) => {
+      const arr = Object.entries(players);
+      $('#count').textContent = arr.length;
+      
+      arr.forEach(([id, p]) => {
         const li = document.createElement('li');
-        li.textContent = `${p.name} (${p.score} pts)`;
+        li.innerHTML = `<span>${p.name}</span><span>${p.score} pts</span>`;
         list.appendChild(li);
       });
     });
   }
 
-  const $ = s => document.querySelector(s);
   window.onload = init;
 })();
