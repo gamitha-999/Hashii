@@ -119,14 +119,20 @@
     if(myLocal.finished || myLocal.submitting) return;
     myLocal.submitting = true;
     const q = QUESTIONS[myLocal.currentQ];
-    const isCorrect = (ans === q.correct);
+    
+    // Highlight all options: Correct one green, others red
+    const allOptions = document.querySelectorAll('.option');
+    allOptions.forEach(opt => {
+       if(opt.textContent === q.correct) {
+          opt.style.background = '#dcfce7';
+          opt.style.borderColor = '#22c55e';
+       } else {
+          opt.style.background = '#fee2e2';
+          opt.style.borderColor = '#ef4444';
+       }
+    });
 
-    if(el) {
-       el.style.background = isCorrect ? '#dcfce7' : '#fee2e2';
-       el.style.borderColor = isCorrect ? '#22c55e' : '#ef4444';
-    }
-
-    if(isCorrect) myLocal.score += 10; else if(ans !== null) myLocal.score -= 5;
+    if(ans === q.correct) myLocal.score += 10; else if(ans !== null) myLocal.score -= 5;
     
     db.ref(`games/${GAME_ID}/players/${playerId}`).update({ score: myLocal.score });
     
