@@ -214,6 +214,23 @@
     // Auto-submit if time runs out
     if(!answers[idx] && timeLeft <= 0) {
        submitAnswer(idx, null, q.correct);
+       return;
+    }
+
+    // Fallback: If current question is already answered but we haven't moved on after 2 seconds
+    if(answers[idx] && answers[idx].timestamp && (now() - answers[idx].timestamp > 2500)) {
+       if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
+          myLocal.currentQ++;
+          myLocal.qStartTime = now();
+          currentRenderedQ = -1;
+       } else if (!myLocal.finished) {
+          myLocal.finished = true;
+          writeMyState();
+          stopLoop();
+          show('#result-screen');
+          computeResults();
+       }
+       return;
     }
 
     // Only update the question and options if it's a new question or currentRenderedQ was reset
@@ -273,7 +290,7 @@
       myLocal.totalTime = (myLocal.totalTime||0) + QUESTION_TIME;
     }
 
-    answers[qIndex] = { answer: selected, time: t, correct: isCorrect, timedOut: timedOut }; 
+    answers[qIndex] = { answer: selected, time: t, correct: isCorrect, timedOut: timedOut, timestamp: now() }; 
     localStorage.setItem('sm-answers', JSON.stringify(answers)); 
     
     writeMyState(); 
@@ -291,12 +308,11 @@
 
     // Move to next question after delay
     setTimeout(() => {
-        // Ensure we are still playing and on the same question
-        if(gameMeta && gameMeta.status === 'playing' && myLocal.currentQ === qIndex) {
+        if(myLocal.currentQ === qIndex && !myLocal.finished) {
             if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
               myLocal.currentQ++;
               myLocal.qStartTime = now();
-              currentRenderedQ = -1; // Force render next question
+              currentRenderedQ = -1; 
             } else {
               myLocal.finished = true;
               writeMyState();
