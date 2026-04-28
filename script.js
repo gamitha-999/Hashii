@@ -77,6 +77,11 @@
   function handleStatusChange(){
     if(gameStatus === 'playing') {
       if(!myLocal.finished && !$('#game-screen').classList.contains('active')) { show('#game-screen'); startQuiz(); }
+    } else if (gameStatus === 'lobby') {
+      myLocal.finished = false;
+      myLocal.currentQ = 0;
+      myLocal.score = 0;
+      show('#lobby-screen');
     } else {
       if(!myLocal.finished) show('#lobby-screen');
     }
@@ -105,19 +110,31 @@
       const b = document.createElement('div');
       b.className = 'option';
       b.textContent = opt;
-      b.onclick = () => submit(opt);
+      b.onclick = () => submit(opt, b);
       opts.appendChild(b);
     });
   }
 
-  function submit(ans){
-    if(myLocal.finished) return;
+  function submit(ans, el){
+    if(myLocal.finished || myLocal.submitting) return;
+    myLocal.submitting = true;
     const q = QUESTIONS[myLocal.currentQ];
-    if(ans === q.correct) myLocal.score += 10; else if(ans !== null) myLocal.score -= 5;
+    const isCorrect = (ans === q.correct);
+
+    if(el) {
+       el.style.background = isCorrect ? '#dcfce7' : '#fee2e2';
+       el.style.borderColor = isCorrect ? '#22c55e' : '#ef4444';
+    }
+
+    if(isCorrect) myLocal.score += 10; else if(ans !== null) myLocal.score -= 5;
     
     db.ref(`games/${GAME_ID}/players/${playerId}`).update({ score: myLocal.score });
-    myLocal.currentQ++;
-    nextQuestion();
+    
+    setTimeout(() => {
+      myLocal.submitting = false;
+      myLocal.currentQ++;
+      nextQuestion();
+    }, 1000);
   }
 
   function updateTimer(){

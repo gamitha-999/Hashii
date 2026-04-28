@@ -11,7 +11,7 @@ body { background: var(--bg); color: var(--text); display: flex; justify-content
 
 #app { width: 100%; max-width: 450px; }
 
-.screen { display: none; background: var(--card); padding: 20px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.screen { display: none; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .screen.active { display: block; }
 
 h1 { text-align: center; margin-bottom: 20px; color: var(--primary); }
