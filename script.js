@@ -25,7 +25,7 @@
   ];
 
   let app, db, playerId, playerName;
-  let myLocal = { score: 0, currentQ: 0, qStartTime: 0, finished: false };
+  let myLocal = { score: 0, currentQ: 0, qStartTime: 0, finished: false, joined: false };
   let players = {};
   let gameStatus = 'lobby';
   let tickInterval = null;
@@ -69,18 +69,16 @@
 
   function join(){
     myLocal.joined = true;
-    db.ref(`games/${GAME_ID}/players/${playerId}`).set({ name: playerName, score: 0, finished: false, lastSeen: Date.now() });
+    db.ref(`games/${GAME_ID}/players/${playerId}`).set({ name: playerName, score: 0, finished: false });
     db.ref(`games/${GAME_ID}/players/${playerId}`).onDisconnect().remove();
     handleStatusChange();
   }
 
   function handleStatusChange(){
     if(gameStatus === 'playing') {
-      if(!myLocal.finished) { show('#game-screen'); startQuiz(); }
-    } else if(gameStatus === 'ended') {
-      show('#result-screen');
+      if(!myLocal.finished && !$('#game-screen').classList.contains('active')) { show('#game-screen'); startQuiz(); }
     } else {
-      show('#lobby-screen');
+      if(!myLocal.finished) show('#lobby-screen');
     }
   }
 
@@ -99,7 +97,7 @@
     }
     myLocal.qStartTime = Date.now();
     const q = QUESTIONS[myLocal.currentQ];
-    $('#question-stage').textContent = `Question ${myLocal.currentQ + 1} / ${QUESTIONS.length}`;
+    $('#question-stage').textContent = `Q ${myLocal.currentQ + 1} / ${QUESTIONS.length}`;
     $('#question-text').textContent = q.q;
     const opts = $('#options');
     opts.innerHTML = '';
@@ -113,8 +111,9 @@
   }
 
   function submit(ans){
+    if(myLocal.finished) return;
     const q = QUESTIONS[myLocal.currentQ];
-    if(ans === q.correct) myLocal.score += 10; else myLocal.score -= 5;
+    if(ans === q.correct) myLocal.score += 10; else if(ans !== null) myLocal.score -= 5;
     
     db.ref(`games/${GAME_ID}/players/${playerId}`).update({ score: myLocal.score });
     myLocal.currentQ++;
@@ -157,11 +156,9 @@
     const sorted = Object.values(players).sort((a,b) => b.score - a.score).slice(0, 3);
     sorted.forEach((p, i) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p.score}</td><td>-</td>`;
+      tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p.score}</td>`;
       tbody.appendChild(tr);
     });
-    $('#waiting-for-others').classList.add('hidden');
-    $('#final-leaderboard-container').classList.remove('hidden');
     $('#result-summary').innerHTML = `<h2>Your Score: ${myLocal.score}</h2>`;
   }
 
