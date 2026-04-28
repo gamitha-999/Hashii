@@ -60,12 +60,15 @@
       const players = s.val() || {};
       const list = $('#players-list');
       list.innerHTML = '';
-      const arr = Object.entries(players);
+      
+      // Sort players by score descending
+      const arr = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
       $('#count').textContent = arr.length;
       
-      arr.forEach(([id, p]) => {
+      arr.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${p.name}</span><span>${p.score} pts</span>`;
+        const status = p.finished ? '✅' : '⏳';
+        li.innerHTML = `<span>${i+1}. ${p.name} ${status}</span><span>${p.score || 0} pts</span>`;
         list.appendChild(li);
       });
     });
