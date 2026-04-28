@@ -175,6 +175,8 @@
   }
   function stopLoop(){ if(tickInterval) { clearInterval(tickInterval); tickInterval=null; } }
 
+  let currentRenderedQ = -1;
+
   function tick(){ 
     if(!gameMeta || gameMeta.status!=='playing' || myLocal.finished) return; 
     
@@ -200,14 +202,18 @@
        submitAnswer(idx, null, q.correct);
     }
 
-    $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
-    $('#question-text').textContent = q.q;
+    // Only update the question and options if it's a new question or state changed
+    if (currentRenderedQ !== idx) {
+      $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
+      $('#question-text').textContent = q.q;
+      
+      const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
+      const options = seededShuffle(q.options || [], optSeed);
+      renderOptions(options, q.correct, idx);
+      currentRenderedQ = idx;
+    }
     
-    // Shuffle options uniquely for this question and this player
-    const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
-    const options = seededShuffle(q.options || [], optSeed);
-    renderOptions(options, q.correct, idx);
-    
+    // Timer and progress bar should update every tick
     $('#timer').textContent = `⏱️ ${timeLeft}`; 
     const pct = ((QUESTION_TIME - timeLeft)/QUESTION_TIME)*100; 
     $('#progress-bar').style.width = `${pct}%`;
@@ -220,7 +226,7 @@
     const myAns = answers[qIndex]; 
     
     options.forEach(opt=>{ 
-      if(!opt) return; // Skip empty options
+      if(!opt) return; 
       const d=document.createElement('div'); 
       d.className='option'; 
       d.textContent = opt; 
@@ -265,6 +271,9 @@
       AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
     }
 
+    // Force re-render of options to show correct/wrong
+    currentRenderedQ = -1; 
+
     // Move to next question after delay
     setTimeout(() => {
         if(myLocal.currentQ === qIndex && gameMeta.status === 'playing') {
@@ -272,6 +281,7 @@
             if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
               myLocal.currentQ++;
               myLocal.qStartTime = now();
+              currentRenderedQ = -1; // Ensure next Q renders
             } else {
               myLocal.finished = true;
               writeMyState();

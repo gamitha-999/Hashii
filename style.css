@@ -273,13 +273,20 @@ input:focus {
 }
 
 .option {
-  padding: 14px 18px;
+  padding: 16px 20px;
   background: #f8fafc;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
 }
 
 .option:hover:not(.disabled) {
