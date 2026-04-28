@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
-  <title>Study Master Challenge</title>
-  <link rel="stylesheet" href="style-fixed.css" />
+  <title>Study Master Challenge 🎓</title>
+  <meta name="description" content="A live multiplayer quiz for students to master their study habits.">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app">
@@ -12,42 +13,56 @@
     <section id="join-screen" class="screen active">
       <div class="card">
         <h1>🎓 Study Master</h1>
-        <p class="subtitle">Can you get A+ in your exam? 🚀</p>
-        <input id="name-input" placeholder="✍️ Enter your name" maxlength="24" />
-        <button id="join-btn" class="btn primary">Join Game 🎮</button>
-        <button class="btn" onclick="location.href='admin.html'">Admin Login 🔑</button>
-        <p class="muted" style="text-align:center; margin-top:10px">Enter your name to join the lobby</p>
+        <p class="subtitle">Master your habits, Ace your exams! 🚀</p>
+        
+        <div class="input-group">
+          <label for="name-input" class="muted">Your Student Name</label>
+          <input id="name-input" placeholder="✍️ e.g. Alex" maxlength="24" />
+        </div>
+        
+        <button id="join-btn" class="btn primary">Join the Classroom 🎮</button>
+        <button class="btn" onclick="location.href='admin.html'">Admin Access 🔑</button>
+        
+        <div class="note">
+          <p class="muted">Enter your name to join the live waiting room.</p>
+        </div>
       </div>
     </section>
 
     <!-- Screen: Lobby -->
     <section id="lobby-screen" class="screen">
       <div class="card">
-        <h3>👥 Waiting Room</h3>
-        <p class="muted" id="players-count" style="margin-bottom:15px">0 players</p>
+        <div class="lobby-header">
+          <h3>👥 Waiting Room</h3>
+          <p class="muted" id="players-count">0 students joined</p>
+        </div>
         <ul id="players-list" class="players-list"></ul>
       </div>
       
-      <div class="card">
-        <h3>ℹ️ Game Info</h3>
-        <p>Mode: 📝 Live Quiz</p>
-        <p class="muted">Wait for the host to start the game. All players will sync live.</p>
+      <div class="card info-card">
+        <h3>📖 Game Rules</h3>
+        <ul class="rules-list">
+          <li>✅ +10 points for correct answers</li>
+          <li>❌ -5 points for wrong answers</li>
+          <li>⏱️ 20 seconds per question</li>
+        </ul>
+        <p class="muted" style="margin-top: 10px;">Waiting for the teacher to start...</p>
       </div>
 
-      <button id="leave-btn" class="btn danger">Leave Game 🏃</button>
+      <button id="leave-btn" class="btn danger">Leave Classroom 🏃</button>
     </section>
 
     <!-- Screen: Game -->
     <section id="game-screen" class="screen">
       <div class="game-card">
         <div class="game-header">
-          <p id="question-stage">📖 Stage 0/0</p>
-          <h2 id="question-text">Question text</h2>
+          <div id="question-stage">📖 Stage 0/0</div>
+          <h2 id="question-text">Preparing your next challenge...</h2>
           
           <div class="scoreboard-mini">
-            <div id="rank">🏆 # -</div>
-            <div id="my-score">✨ 0</div>
-            <div id="timer">⏱️ 20</div>
+            <div id="rank">🏆 Rank: -</div>
+            <div id="my-score">✨ Score: 0</div>
+            <div id="timer">⏱️ 20s</div>
           </div>
         </div>
         
@@ -56,33 +71,40 @@
         <div id="options" class="options"></div>
         <div id="feedback" class="feedback"></div>
 
-        <button id="leave-game-btn" class="btn danger">Leave Game 🏃</button>
+        <button id="leave-game-btn" class="btn danger">Exit Game 🏃</button>
       </div>
     </section>
 
     <!-- Screen: Result -->
     <section id="result-screen" class="screen">
       <div class="card">
-        <h1>🎉 Finished!</h1>
+        <h1>🎉 Session Finished!</h1>
         <div id="result-summary" style="text-align:center; margin-bottom:20px"></div>
         
         <div id="waiting-for-others">
-          <h3>⏳ Waiting for others...</h3>
+          <h3>⏳ Waiting for class to finish...</h3>
           <div class="loader"></div>
         </div>
 
         <div id="final-leaderboard-container" class="hidden">
-          <h3>🏆 Final Leaderboard</h3>
+          <h3>🏆 Class Leaderboard</h3>
           <table id="final-leaderboard" class="leaderboard">
-            <thead><tr><th>#</th><th>Name</th><th>Pts</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Student</th>
+                <th>Score</th>
+                <th>Time (s)</th>
+              </tr>
+            </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
 
       <div class="row">
-        <button id="back-lobby-btn" class="btn primary">🏠 Lobby</button>
-        <button id="reset-local-btn" class="btn">🧹 Reset</button>
+        <button id="back-lobby-btn" class="btn primary">🏠 Back to Lobby</button>
+        <button id="reset-local-btn" class="btn">🧹 Reset Data</button>
       </div>
     </section>
 
@@ -90,8 +112,9 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
+  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="script-fixed.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
