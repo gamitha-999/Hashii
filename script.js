@@ -34,8 +34,12 @@
   const show = sel => { document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); $(sel).classList.add('active'); };
 
   function init(){
-    app = firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
+    try {
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch(e) {
+      console.warn("Firebase config missing or invalid.");
+    }
     
     playerId = localStorage.getItem('sm-playerId') || 'p' + Math.random().toString(36).slice(2,8);
     localStorage.setItem('sm-playerId', playerId);
@@ -54,24 +58,30 @@
     $('#leave-game-btn').onclick = () => location.reload();
     $('#back-lobby-btn').onclick = () => location.reload();
 
-    db.ref(`games/${GAME_ID}/meta`).on('value', s => {
-      const meta = s.val() || {};
-      gameStatus = meta.status || 'lobby';
-      if(myLocal.joined) handleStatusChange();
-    });
+    if(db) {
+      db.ref(`games/${GAME_ID}/meta`).on('value', s => {
+        const meta = s.val() || {};
+        gameStatus = meta.status || 'lobby';
+        if(myLocal.joined) handleStatusChange();
+      });
 
-    db.ref(`games/${GAME_ID}/players`).on('value', s => {
-      players = s.val() || {};
-      renderLobby();
-      if(myLocal.finished) renderFinalLeaderboard();
-    });
+      db.ref(`games/${GAME_ID}/players`).on('value', s => {
+        players = s.val() || {};
+        renderLobby();
+        if(myLocal.finished) renderFinalLeaderboard();
+      });
+    }
   }
 
   function join(){
     myLocal.joined = true;
-    db.ref(`games/${GAME_ID}/players/${playerId}`).set({ name: playerName, score: 0, finished: false });
-    db.ref(`games/${GAME_ID}/players/${playerId}`).onDisconnect().remove();
-    handleStatusChange();
+    show('#lobby-screen'); // Immediately show the waiting room
+    
+    if(db) {
+      db.ref(`games/${GAME_ID}/players/${playerId}`).set({ name: playerName, score: 0, finished: false });
+      db.ref(`games/${GAME_ID}/players/${playerId}`).onDisconnect().remove();
+      handleStatusChange();
+    }
   }
 
   function handleStatusChange(){
