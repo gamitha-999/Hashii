@@ -15,15 +15,22 @@
   const show = sel => { document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); $(sel).classList.add('active'); };
 
   function init(){
-    const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
+    try {
+      const app = firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch(e) {
+      console.warn("Firebase config missing or invalid. Please update firebaseConfig in admin.js");
+    }
 
     $('#login-btn').onclick = () => {
-      const u = $('#adm-user').value;
-      const p = $('#adm-pass').value;
+      const u = $('#adm-user').value.trim();
+      const p = $('#adm-pass').value.trim();
       if(u === 'admin' && p === 'harshi') {
+        if(!db) {
+          alert('Admin logged in, but Firebase is not connected. Please check your config!');
+        }
         show('#admin-panel');
-        attachAdminListeners();
+        if(db) attachAdminListeners();
       } else {
         alert('Wrong Username or Password');
       }
