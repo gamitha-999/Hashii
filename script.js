@@ -164,8 +164,8 @@
   function startLoop(){ 
     stopLoop(); 
     
-    // Seeded shuffle of the entire QUESTIONS array based on playerId
-    myShuffledQuestions = seededShuffle(QUESTIONS, (playerId || 'default'));
+    // NO SHUFFLE: Use the original QUESTIONS array
+    myShuffledQuestions = QUESTIONS.slice();
     
     // Resume from where we left off based on local storage answers
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
@@ -217,19 +217,11 @@
        return;
     }
 
-    // Fallback: If current question is already answered but we haven't moved on after 2 seconds
-    if(answers[idx] && answers[idx].timestamp && (now() - answers[idx].timestamp > 2500)) {
-       if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
-          myLocal.currentQ++;
-          myLocal.qStartTime = now();
-          currentRenderedQ = -1;
-       } else if (!myLocal.finished) {
-          myLocal.finished = true;
-          writeMyState();
-          stopLoop();
-          show('#result-screen');
-          computeResults();
-       }
+    // Fallback: If current question is already answered but we haven't moved on
+    if(answers[idx] && answers[idx].timestamp && (now() - answers[idx].timestamp > 2000)) {
+       myLocal.currentQ++;
+       myLocal.qStartTime = now();
+       currentRenderedQ = -1;
        return;
     }
 
@@ -237,10 +229,9 @@
     if (currentRenderedQ !== idx) {
       $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
       $('#question-text').textContent = q.q;
-      // feedback area intentionally unused; using toasts for brief feedback on mobile
       
-      const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
-      const options = seededShuffle(q.options || [], optSeed);
+      // NO SHUFFLE: Use options in original order
+      const options = q.options || [];
       renderOptions(options, q.correct, idx);
       currentRenderedQ = idx;
     }

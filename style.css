@@ -232,7 +232,11 @@ input:focus {
   font-weight: 600;
   margin-bottom: 20px;
   color: var(--text-main);
-  min-height: 60px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .scoreboard-mini {
@@ -267,29 +271,31 @@ input:focus {
 }
 
 .options {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
 }
 
 .option {
-  padding: 16px 20px;
+  padding: 14px 20px;
   background: #f8fafc;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
-  min-height: 56px;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start;
+  text-align: left;
   color: var(--text-main);
   box-shadow: var(--shadow-sm);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  width: 100%;
 }
 
 .option:active:not(.disabled) {
