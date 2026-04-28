@@ -192,6 +192,7 @@
     const timeLeft = Math.max(0, QUESTION_TIME - elapsed);
     
     const q = myShuffledQuestions[idx];
+    if(!q) return;
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
     
     // Auto-submit if time runs out
@@ -203,8 +204,8 @@
     $('#question-text').textContent = q.q;
     
     // Shuffle options uniquely for this question and this player
-    const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q.slice(0,5));
-    const options = seededShuffle(q.options, optSeed);
+    const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
+    const options = seededShuffle(q.options || [], optSeed);
     renderOptions(options, q.correct, idx);
     
     $('#timer').textContent = `⏱️ ${timeLeft}`; 
@@ -219,6 +220,7 @@
     const myAns = answers[qIndex]; 
     
     options.forEach(opt=>{ 
+      if(!opt) return; // Skip empty options
       const d=document.createElement('div'); 
       d.className='option'; 
       d.textContent = opt; 
