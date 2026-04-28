@@ -167,11 +167,25 @@
     // Seeded shuffle of the entire QUESTIONS array based on playerId
     myShuffledQuestions = seededShuffle(QUESTIONS, (playerId || 'default'));
     
-    myLocal.currentQ = 0; 
+    // Resume from where we left off based on local storage answers
+    const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
+    let resumeIdx = 0;
+    while(answers[resumeIdx] && resumeIdx < TOTAL_QUESTIONS) {
+      resumeIdx++;
+    }
+
+    myLocal.currentQ = resumeIdx; 
     myLocal.qStartTime = now(); 
-    myLocal.finished = false;
-    tickInterval = setInterval(tick, 250); 
-    tick(); 
+    myLocal.finished = (resumeIdx >= TOTAL_QUESTIONS);
+    currentRenderedQ = -1; // Reset to force re-render
+
+    if(myLocal.finished) {
+       show('#result-screen');
+       computeResults();
+    } else {
+       tickInterval = setInterval(tick, 250); 
+       tick(); 
+    }
   }
   function stopLoop(){ if(tickInterval) { clearInterval(tickInterval); tickInterval=null; } }
 
@@ -202,10 +216,11 @@
        submitAnswer(idx, null, q.correct);
     }
 
-    // Only update the question and options if it's a new question or state changed
+    // Only update the question and options if it's a new question or currentRenderedQ was reset
     if (currentRenderedQ !== idx) {
       $('#question-stage').textContent = `📖 Stage ${idx+1}/${TOTAL_QUESTIONS}`;
       $('#question-text').textContent = q.q;
+      $('#feedback').innerHTML = ''; // Clear feedback for new question
       
       const optSeed = (playerId||'') + '_q' + idx + '_' + (q.q ? q.q.slice(0,5) : '');
       const options = seededShuffle(q.options || [], optSeed);
@@ -214,7 +229,7 @@
     }
     
     // Timer and progress bar should update every tick
-    $('#timer').textContent = `⏱️ ${timeLeft}`; 
+    $('#timer').textContent = `⏱️ ${timeLeft}s`; 
     const pct = ((QUESTION_TIME - timeLeft)/QUESTION_TIME)*100; 
     $('#progress-bar').style.width = `${pct}%`;
   }
@@ -271,17 +286,17 @@
       AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
     }
 
-    // Force re-render of options to show correct/wrong
+    // Force re-render of current question to show correct/wrong feedback
     currentRenderedQ = -1; 
 
     // Move to next question after delay
     setTimeout(() => {
-        if(myLocal.currentQ === qIndex && gameMeta.status === 'playing') {
-            $('#feedback').innerHTML = '';
+        // Ensure we are still playing and on the same question
+        if(gameMeta && gameMeta.status === 'playing' && myLocal.currentQ === qIndex) {
             if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
               myLocal.currentQ++;
               myLocal.qStartTime = now();
-              currentRenderedQ = -1; // Ensure next Q renders
+              currentRenderedQ = -1; // Force render next question
             } else {
               myLocal.finished = true;
               writeMyState();

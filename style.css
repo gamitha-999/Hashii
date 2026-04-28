@@ -279,7 +279,7 @@ input:focus {
   border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
   min-height: 56px;
   display: flex;
   align-items: center;
@@ -287,11 +287,19 @@ input:focus {
   text-align: center;
   color: var(--text-main);
   box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.option:active:not(.disabled) {
+  transform: scale(0.98);
 }
 
 .option:hover:not(.disabled) {
   border-color: var(--primary);
   background: #eff6ff;
+  box-shadow: var(--shadow-md);
 }
 
 .option.disabled {
