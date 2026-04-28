@@ -30,7 +30,7 @@
   let appFirebase, db;
   let playerId = localStorage.getItem('sm-playerId') || null;
   let playerName = localStorage.getItem('sm-playerName') || null;
-  let myLocal = { score: 0, totalTime: 0, answers: {}, finished: false };
+  let myLocal = { score: 0, totalTime: 0, answers: {}, finished: false, currentQ: 0, qStartTime: 0 };
   let players = {};
   let gameMeta = null;
   let tickInterval = null;
@@ -159,26 +159,37 @@
     });
   }
 
-  function startLoop(){ stopLoop(); tickInterval = setInterval(tick, 250); tick(); }
+  function startLoop(){ 
+    stopLoop(); 
+    myLocal.currentQ = 0; 
+    myLocal.qStartTime = now(); 
+    myLocal.finished = false;
+    tickInterval = setInterval(tick, 250); 
+    tick(); 
+  }
   function stopLoop(){ if(tickInterval) { clearInterval(tickInterval); tickInterval=null; } }
 
-  function currentIndex(){ if(!gameMeta||!gameMeta.startTime) return -1; const elapsed = Math.floor((Date.now()-gameMeta.startTime)/1000); return Math.min(TOTAL_QUESTIONS-1, Math.floor(elapsed/QUESTION_TIME)); }
-  function timeLeft(){ if(!gameMeta||!gameMeta.startTime) return QUESTION_TIME; const elapsed = Math.floor((Date.now()-gameMeta.startTime)/1000); return Math.max(0, QUESTION_TIME - (elapsed % QUESTION_TIME)); }
-
   function tick(){ 
-    if(!gameMeta || gameMeta.status!=='playing') return; 
-    const idx = currentIndex(); 
-    const elapsed = Math.floor((Date.now()-gameMeta.startTime)/1000);
-
-    if(elapsed >= TOTAL_QUESTIONS * QUESTION_TIME){ 
-      myLocal.finished = true; writeMyState();
-      if(gameMeta.hostId === playerId || !gameMeta.hostId) metaRef().update({ status: 'ended', endTime: now() }); 
-      return; 
+    if(!gameMeta || gameMeta.status!=='playing' || myLocal.finished) return; 
+    
+    const idx = myLocal.currentQ;
+    if(idx >= TOTAL_QUESTIONS) {
+       myLocal.finished = true;
+       writeMyState();
+       stopLoop();
+       show('#result-screen');
+       computeResults();
+       return;
     }
+
+    const elapsed = Math.floor((now() - myLocal.qStartTime)/1000);
+    const timeLeft = Math.max(0, QUESTION_TIME - elapsed);
     
     const q = QUESTIONS[idx];
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}');
-    if(!answers[idx] && timeLeft() <= 0) {
+    
+    // Auto-submit if time runs out
+    if(!answers[idx] && timeLeft <= 0) {
        submitAnswer(idx, null, q.correct);
     }
 
@@ -187,8 +198,9 @@
     const seed = (playerId||'') + '|' + idx;
     const options = seededShuffle(q.options, seed);
     renderOptions(options, q.correct, idx);
-    $('#timer').textContent = `⏱️ ${timeLeft()}`; 
-    const pct = ((QUESTION_TIME - timeLeft())/QUESTION_TIME)*100; 
+    
+    $('#timer').textContent = `⏱️ ${timeLeft}`; 
+    const pct = ((QUESTION_TIME - timeLeft)/QUESTION_TIME)*100; 
     $('#progress-bar').style.width = `${pct}%`;
   }
 
@@ -217,8 +229,7 @@
     const answers = JSON.parse(localStorage.getItem('sm-answers')||'{}'); 
     if(answers[qIndex]) return;
 
-    const start = gameMeta.startTime + qIndex*QUESTION_TIME*1000; 
-    const t = Math.max(0, Math.round((Date.now()-start)/1000)); 
+    const t = Math.max(0, Math.round((now() - myLocal.qStartTime)/1000)); 
     
     let isCorrect = (selected === correct);
     let timedOut = (selected === null);
@@ -234,7 +245,6 @@
     answers[qIndex] = { answer: selected, time: t, correct: isCorrect, timedOut: timedOut }; 
     localStorage.setItem('sm-answers', JSON.stringify(answers)); 
     
-    if(qIndex === TOTAL_QUESTIONS - 1) myLocal.finished = true;
     writeMyState(); 
 
     if(timedOut) {
@@ -245,10 +255,20 @@
       AudioMgr.wrong(); $('#feedback').innerHTML = `❌ Wrong! Correct: <b>${correct}</b>`; 
     }
 
+    // Move to next question after delay
     setTimeout(() => {
-        if(currentIndex() === qIndex && gameMeta.status === 'playing') {
-            $('#options').innerHTML = '<div class="card" style="text-align:center;width:100%">⏳ Good job! Wait for the next question...</div>';
-            $('#feedback').innerHTML = 'Syncing... 📡';
+        if(myLocal.currentQ === qIndex && gameMeta.status === 'playing') {
+            $('#feedback').innerHTML = '';
+            if(myLocal.currentQ < TOTAL_QUESTIONS - 1) {
+              myLocal.currentQ++;
+              myLocal.qStartTime = now();
+            } else {
+              myLocal.finished = true;
+              writeMyState();
+              stopLoop();
+              show('#result-screen');
+              computeResults();
+            }
         }
     }, 1500);
   }
